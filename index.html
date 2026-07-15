@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OK.M Gestão de Oficinas</title>
+    <!-- Bootstrap CSS para um visual limpo e responsivo -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome para ícones modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --vermelho-okm: #A81C1C;
+            --cinza-fundo: #F4F6F9;
+            --escuro-okm: #1E1E1E;
+        }
+        body {
+            background-color: var(--cinza-fundo);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar-okm {
+            background-color: var(--vermelho-okm);
+            color: white;
+        }
+        .card-metrica {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card-metrica:hover {
+            transform: translateY(-3px);
+        }
+        .btn-okm {
+            background-color: var(--vermelho-okm);
+            color: white;
+            border: none;
+        }
+        .btn-okm:hover {
+            background-color: #821515;
+            color: white;
+        }
+        .badge-status {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        .logo-container {
+            max-width: 180px;
+            margin: 15px auto;
+            display: block;
+        }
+        /* Menu Inferior Estilo App */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1030;
+        }
+        .bottom-nav-item {
+            text-decoration: none;
+            color: #6c757d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+        .bottom-nav-item.active {
+            color: var(--vermelho-okm);
+            font-weight: bold;
+        }
+        .bottom-nav-item i {
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+        }
+        /* Espaço para o menu inferior não cobrir o conteúdo */
+        .content-area {
+            padding-bottom: 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Navegação Superior -->
+    <nav class="navbar navbar-okm sticky-top">
+        <div class="container-fluid justify-content-center">
+            <span class="navbar-brand mb-0 h1 text-white text-center">
+                <i class="fa-solid fa-motorcycle me-2"></i> OK.M Gestão de Oficinas
+            </span>
+        </div>
+    </nav>
+
+    <!-- Área de Conteúdo Principal -->
+    <div class="container content-area mt-3">
+        
+        <!-- Logo Centralizado -->
+        <div class="text-center mb-4">
+            <!-- Nota: Substitua pelo link real do seu logo hospedado ou use localmente -->
+            <img src="https://i.ibb.co/3yk8kK9/logo-okm.jpg" alt="OK.M Moto Peças" class="logo-container img-fluid rounded-circle shadow-sm" onerror="this.src='https://placehold.co/150x150/A81C1C/FFFFFF?text=OK.M+MOTO'">
+        </div>
+
+        <!-- ================= TELA 1: PAINEL (DASHBOARD) ================= -->
+        <div id="tela-painel">
+            <h4 class="mb-3 text-secondary"><i class="fa-solid fa-chart-simple me-2"></i>Visão Geral</h4>
+            
+            <!-- Cards de Métricas -->
+            <div class="row g-3 mb-4">
+                <div class="col-4">
+                    <div class="card card-metrica text-center p-2 bg-white">
+                        <span class="text-muted small">Em Serviço</span>
+                        <h3 class="fw-bold text-dark mt-1" id="qtd-servico">0</h3>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card card-metrica text-center p-2 bg-white">
+                        <span class="text-muted small">Aguardando</span>
+                        <h3 class="fw-bold text-warning mt-1" id="qtd-aguardando">0</h3>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card card-metrica text-center p-2 bg-white">
+                        <span class="text-muted small">Prontas</span>
+                        <h3 class="fw-bold text-success mt-1" id="qtd-prontas">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <h5 class="mb-3"><i class="fa-solid fa-list-check me-2"></i>Ordens de Serviço Ativas</h5>
+            
+            <!-- Lista de OS -->
+            <div id="lista-os" class="list-group">
+                <!-- Inserido dinamicamente via JS -->
+                <div class="text-center text-muted my-4">Nenhuma OS cadastrada no momento.</div>
+            </div>
+        </div>
+
+        <!-- ================= TELA 2: NOVA OS (FORMULÁRIO) ================= -->
+        <div id="tela-nova-os" class="d-none">
+            <h4 class="mb-3 text-secondary"><i class="fa-solid fa-file-invoice me-2"></i>Nova Ordem de Serviço</h4>
+            
+            <form id="form-os" class="card p-3 shadow-sm border-0">
+                <!-- Cliente -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Cliente</label>
+                    <input type="text" class="form-control" id="os-cliente" placeholder="Nome completo do cliente" required>
+                </div>
+
+                <!-- Veículo (Moto) -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Modelo da Moto</label>
+                        <input type="text" class="form-control" id="os-moto" placeholder="Ex: Honda XRE 300" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Placa</label>
+                        <input type="text" class="form-control" id="os-placa" placeholder="Ex: ABC-1234" required>
+                    </div>
+                </div>
+
+                <!-- Quilometragem e Ano -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-bold">KM Atual</label>
+                        <input type="number" class="form-control" id="os-km" placeholder="Ex: 12500" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-bold">Ano</label>
+                        <input type="number" class="form-control" id="os-ano" placeholder="Ex: 2021">
+                    </div>
+                </div>
+
+                <!-- Problema Relatado -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Descrição do Problema / Relato</label>
+                    <textarea class="form-control" id="os-descricao" rows="3" placeholder="O que o cliente relatou ou o que precisa ser feito?" required></textarea>
+                </div>
+
+                <!-- Checklist Rápido -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold"><i class="fa-solid fa-square-check text-danger me-1"></i>Checklist de Entrada</label>
+                    <div class="p-3 bg-light rounded">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="check-combustivel">
+                            <label class="form-check-input-label" for="check-combustivel">Combustível ok (mais de 1/4)</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="check-pneus">
+                            <label class="form-check-input-label" for="check-pneus">Pneus em bom estado</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="check-arranhoes">
+                            <label class="form-check-input-label" for="check-arranhoes">Sem riscos ou amassados visíveis</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão de Ação -->
+                <button type="submit" class="btn btn-okm w-100 py-3 fw-bold fs-5 rounded-3">
+                    <i class="fa-solid fa-circle-plus me-2"></i>CRIAR ORDEM DE SERVIÇO
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Menu de Navegação Inferior (Estilo Aplicativo) -->
+    <div class="bottom-nav">
+        <a href="#" class="bottom-nav-item active" id="nav-painel" onclick="mudarTela('painel')">
+            <i class="fa-solid fa-table-columns"></i>
+            <span>Painel</span>
+        </a>
+        <a href="#" class="bottom-nav-item" id="nav-nova-os" onclick="mudarTela('nova-os')">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>Nova OS</span>
+        </a>
+    </div>
+
+    <!-- Lógica em JavaScript (Gerenciamento e Armazenamento Local) -->
+    <script>
+        // Banco de Dados Local Simulado (Armazena no navegador)
+        let bancoOS = JSON.parse(localStorage.getItem('okm_ordens_servico')) || [];
+
+        // Elementos de tela
+        const telaPainel = document.getElementById('tela-painel');
+        const telaNovaOS = document.getElementById('tela-nova-os');
+        const navPainel = document.getElementById('nav-painel');
+        const navNovaOS = document.getElementById('nav-nova-os');
+
+        // Alternar telas
+        function mudarTela(tela) {
+            if (tela === 'painel') {
+                telaPainel.classList.remove('d-none');
+                telaNovaOS.classList.add('d-none');
+                navPainel.classList.add('active');
+                navNovaOS.classList.remove('active');
+                renderizarPainel();
+            } else if (tela === 'nova-os') {
+                telaPainel.classList.add('d-none');
+                telaNovaOS.classList.remove('d-none');
+                navPainel.classList.remove('active');
+                navNovaOS.classList.add('active');
+            }
+        }
+
+        // Salvar Nova OS
+        document.getElementById('form-os').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const novaOS = {
+                id: 'OS-' + Math.floor(1000 + Math.random() * 9000),
+                cliente: document.getElementById('os-cliente').value,
+                moto: document.getElementById('os-moto').value,
+                placa: document.getElementById('os-placa').value.toUpperCase(),
+                km: document.getElementById('os-km').value,
+                ano: document.getElementById('os-ano').value,
+                descricao: document.getElementById('os-descricao').value,
+                status: 'Em Serviço', // Status inicial padrão
+                checklist: {
+                    combustivel: document.getElementById('check-combustivel').checked,
+                    pneus: document.getElementById('check-pneus').checked,
+                    arranhoes: document.getElementById('check-arranhoes').checked
+                },
+                dataCriacao: new Date().toLocaleDateString('pt-BR')
+            };
+
+            bancoOS.push(novaOS);
+            localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
+
+            // Resetar formulário e voltar ao painel
+            document.getElementById('form-os').reset();
+            alert('Ordem de Serviço criada com sucesso!');
+            mudarTela('painel');
+        });
+
+        // Atualizar Status de uma OS
+        function alterarStatus(id, novoStatus) {
+            bancoOS = bancoOS.map(os => {
+                if (os.id === id) os.status = novoStatus;
+                return os;
+            });
+            localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
+            renderizarPainel();
+        }
+
+        // Renderizar Painel Dinâmico
+        function renderizarPainel() {
+            const listaOS = document.getElementById('lista-os');
+            listaOS.innerHTML = '';
+
+            // Contadores
+            let emServico = 0;
+            let aguardando = 0;
+            let prontas = 0;
+
+            if (bancoOS.length === 0) {
+                listaOS.innerHTML = `<div class="text-center text-muted my-4">Nenhuma OS cadastrada no momento.</div>`;
+            } else {
+                bancoOS.forEach(os => {
+                    // Contagem de métricas
+                    if (os.status === 'Em Serviço') emServico++;
+                    if (os.status === 'Aguardando Peças') aguardando++;
+                    if (os.status === 'Pronta') prontas++;
+
+                    // Cor do Badge do Status
+                    let badgeColor = 'bg-primary';
+                    if (os.status === 'Aguardando Peças') badgeColor = 'bg-warning text-dark';
+                    if (os.status === 'Pronta') badgeColor = 'bg-success';
+
+                    const item = document.createElement('div');
+                    item.className = 'card mb-3 border-0 shadow-sm p-3 position-relative';
+                    item.style.borderLeft = '6px solid var(--vermelho-okm)';
+                    item.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="fw-bold text-danger">${os.id}</span>
+                                <small class="text-muted ms-2">${os.dataCriacao}</small>
+                            </div>
+                            <span class="badge badge-status ${badgeColor}">${os.status}</span>
+                        </div>
+                        <h6 class="mb-1"><strong>Cliente:</strong> ${os.cliente}</h6>
+                        <p class="mb-1 text-secondary"><strong>Moto:</strong> ${os.moto} (${os.placa}) - <strong>KM:</strong> ${os.km}</p>
+                        <p class="small text-muted bg-light p-2 rounded mb-2">"${os.descricao}"</p>
+                        
+                        <!-- Ações Rápidas de Status -->
+                        <div class="d-flex gap-1 mt-2">
+                            <button onclick="alterarStatus('${os.id}', 'Em Serviço')" class="btn btn-sm btn-outline-primary py-1 px-2 text-xs">Iniciar</button>
+                            <button onclick="alterarStatus('${os.id}', 'Aguardando Peças')" class="btn btn-sm btn-outline-warning py-1 px-2 text-xs">Pausar (Peças)</button>
+                            <button onclick="alterarStatus('${os.id}', 'Pronta')" class="btn btn-sm btn-outline-success py-1 px-2 text-xs">Pronta</button>
+                        </div>
+                    `;
+                    listaOS.appendChild(item);
+                });
+            }
+
+            // Atualiza os números no topo
+            document.getElementById('qtd-servico').innerText = emServico;
+            document.getElementById('qtd-aguardando').innerText = aguardando;
+            document.getElementById('qtd-prontas').innerText = prontas;
+        }
+
+        // Executar ao abrir o app
+        renderizarPainel();
+    </script>
+</body>
+</html>
