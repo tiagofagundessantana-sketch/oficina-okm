@@ -8,8 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Tesseract.js para OCR de Placa por Foto -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
             --vermelho-okm: #A81C1C;
@@ -133,9 +131,6 @@
 </head>
 <body>
 
-    <!-- Canvas Invisível para Pré-Processar Imagem -->
-    <canvas id="canvas-processamento" style="display:none;"></canvas>
-
     <!-- Header Principal -->
     <nav class="navbar navbar-okm sticky-top no-print">
         <div class="container-fluid justify-content-center">
@@ -251,21 +246,11 @@
 
                         <hr class="my-3">
 
-                        <!-- Busca / Preenchimento de Placa e Leitor por Câmera -->
+                        <!-- Busca / Preenchimento de Placa -->
                         <div class="row g-2 mb-3">
                             <div class="col-12">
-                                <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo</label>
-                                <div class="input-group">
-                                    <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="Ex: ABC-1234 ou ABC1D23" oninput="buscarDadosPorPlaca(this.value)" required>
-                                    
-                                    <!-- Botão de Câmera/Foto -->
-                                    <button class="btn btn-outline-danger btn-sm" type="button" onclick="document.getElementById('input-foto-placa').click()" title="Tirar foto da placa">
-                                        <i class="fa-solid fa-camera me-1"></i> Foto Placa
-                                    </button>
-                                </div>
-                                <input type="file" id="input-foto-placa" accept="image/*" capture="environment" style="display: none;" onchange="processarFotoPlaca(this)">
-                                
-                                <small class="text-muted d-block mt-1" id="status-ocr" style="display:none;"></small>
+                                <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo (Digite para puxar dados cadastrados)</label>
+                                <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="EX: ABC-1234 OU ABC1D23" oninput="buscarDadosPorPlaca(this.value)" required>
                                 <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check me-1"></i>Dados do veículo carregados do histórico!</small>
                             </div>
                             <div class="col-7">
@@ -385,6 +370,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        const SENHA_EXCLUSAO = "4958";
         let bancoOS = JSON.parse(localStorage.getItem('okm_ordens_servico')) || [];
         let osSelecionadaId = null;
 
@@ -398,105 +384,6 @@
             document.getElementById('nav-nova-os').classList.toggle('active', tela === 'tela-nova-os');
 
             if(tela === 'tela-painel') renderizarPainel();
-        }
-
-        /* --- LEITOR AVANÇADO DE PLACA COM PRÉ-PROCESSAMENTO --- */
-        async function processarFotoPlaca(input) {
-            if (!input.files || !input.files[0]) return;
-
-            const arquivo = input.files[0];
-            const statusOcr = document.getElementById('status-ocr');
-            statusOcr.style.display = 'block';
-            statusOcr.className = 'text-primary small d-block mt-1';
-            statusOcr.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Tratando imagem e lendo placa...';
-
-            try {
-                // Prepara a imagem aumentando o contraste
-                const imagemTratada = await otimizarImagemPlaca(arquivo);
-
-                const resultado = await Tesseract.recognize(imagemTratada, 'eng', {
-                    logger: m => {
-                        if (m.status === 'recognizing text') {
-                            statusOcr.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Processando leitura (${Math.round(m.progress * 100)}%)...`;
-                        }
-                    }
-                });
-
-                let texto = resultado.data.text.toUpperCase().replace(/[^A-Z0-9]/g, '');
-                
-                // Tenta extrair padrões conhecidos
-                let placaEncontrada = extrairPlacaValida(texto);
-
-                if (placaEncontrada) {
-                    document.getElementById('veiculo-placa').value = placaEncontrada;
-                    statusOcr.className = 'text-success small d-block mt-1';
-                    statusOcr.innerHTML = `<i class="fa-solid fa-check me-1"></i> Placa identificada: <strong>${placaEncontrada}</strong>`;
-                    buscarDadosPorPlaca(placaEncontrada);
-                } else {
-                    statusOcr.className = 'text-warning small d-block mt-1';
-                    statusOcr.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Não foi possível ler com precisão. Enquadre bem a placa de perto e sem sombras.';
-                }
-            } catch (erro) {
-                statusOcr.className = 'text-danger small d-block mt-1';
-                statusOcr.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i> Erro na leitura da foto. Digite manualmente.';
-            }
-        }
-
-        // Função para aumentar contraste e preto/branco da imagem
-        function otimizarImagemPlaca(file) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.src = URL.createObjectURL(file);
-                img.onload = () => {
-                    const canvas = document.getElementById('canvas-processamento');
-                    const ctx = canvas.getContext('2d');
-
-                    // Redimensiona mantendo proporção para no máximo 800px de largura
-                    let largura = img.width;
-                    let altura = img.height;
-                    const maxDim = 800;
-
-                    if (largura > maxDim || altura > maxDim) {
-                        if (largura > altura) {
-                            altura = Math.round((altura * maxDim) / largura);
-                            largura = maxDim;
-                        } else {
-                            largura = Math.round((largura * maxDim) / altura);
-                            altura = maxDim;
-                        }
-                    }
-
-                    canvas.width = largura;
-                    canvas.height = altura;
-                    ctx.drawImage(img, 0, 0, largura, altura);
-
-                    const imgData = ctx.getImageData(0, 0, largura, altura);
-                    const d = imgData.data;
-
-                    // Converte para escala de cinza e aumenta o contraste
-                    for (let i = 0; i < d.length; i += 4) {
-                        const cinza = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
-                        const valor = cinza > 120 ? 255 : 0; // Limiarização Binarizada
-                        d[i] = d[i + 1] = d[i + 2] = valor;
-                    }
-
-                    ctx.putImageData(imgData, 0, 0);
-                    resolve(canvas.toDataURL('image/jpeg'));
-                };
-            });
-        }
-
-        // Função de busca de placas do Brasil
-        function extrairPlacaValida(texto) {
-            // Procura Mercosul (3 letras + 1 num + 1 letra + 2 num)
-            let matchMercosul = texto.match(/[A-Z]{3}[0-9][A-Z][0-9]{2}/);
-            if (matchMercosul) return matchMercosul[0];
-
-            // Procura Padrão Antigo (3 letras + 4 num)
-            let matchAntigo = texto.match(/[A-Z]{3}[0-9]{4}/);
-            if (matchAntigo) return matchAntigo[0];
-
-            return null;
         }
 
         function buscarDadosPorPlaca(placaDigitada) {
@@ -546,7 +433,6 @@
             document.getElementById('form-os').reset();
             document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
             document.getElementById('msg-placa-encontrada').style.display = 'none';
-            document.getElementById('status-ocr').style.display = 'none';
             
             alert('Ordem de Serviço criada com sucesso!');
             trocarTela('tela-painel');
@@ -770,20 +656,34 @@
 
         function excluirOSAtual() {
             if(!osSelecionadaId) return;
-            if(confirm(`Tem certeza que deseja excluir permanentemente a nota ${osSelecionadaId}?`)) {
+            
+            const senhaDigitada = prompt("Digite a senha de autorização para excluir a Ordem de Serviço:");
+            if (senhaDigitada === null) return; // Cancelou
+            
+            if (senhaDigitada === SENHA_EXCLUSAO) {
                 bancoOS = bancoOS.filter(item => item.id !== osSelecionadaId);
                 localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
                 bootstrap.Modal.getInstance(document.getElementById('modalOS')).hide();
                 renderizarPainel();
+                alert("Ordem de Serviço excluída com sucesso.");
+            } else {
+                alert("Senha incorreta! Exclusão não autorizada.");
             }
         }
 
         function deletarOSDirect(id, e) {
             e.stopPropagation();
-            if(confirm(`Tem certeza que deseja excluir permanentemente a nota ${id}?`)) {
+
+            const senhaDigitada = prompt(`Digite a senha para excluir a ${id}:`);
+            if (senhaDigitada === null) return; // Cancelou
+
+            if (senhaDigitada === SENHA_EXCLUSAO) {
                 bancoOS = bancoOS.filter(item => item.id !== id);
                 localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
                 renderizarPainel();
+                alert("Ordem de Serviço excluída com sucesso.");
+            } else {
+                alert("Senha incorreta! Exclusão não autorizada.");
             }
         }
 
