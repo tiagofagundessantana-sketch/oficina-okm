@@ -150,13 +150,13 @@
                 </div>
             </div>
 
-            <!-- Painel de Filtros -->
+            <!-- Painel de Filtros com Botão de Filtrar -->
             <div class="card card-custom p-3 mb-3 border-start border-danger border-4 no-print">
                 <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-filter me-1"></i> Filtrar Ordens de Serviço</h6>
                 <div class="row g-2">
-                    <div class="col-6 col-md-3">
+                    <div class="col-12 col-md-3">
                         <label class="form-label small fw-bold mb-1">Status</label>
-                        <select id="filtro-status" class="form-select form-select-sm" onchange="renderizarPainel()">
+                        <select id="filtro-status" class="form-select form-select-sm">
                             <option value="todos">Todos os Status</option>
                             <option value="Em Serviço">Em Serviço (Abertas)</option>
                             <option value="Aguardando">Aguardando Peça/Cliente</option>
@@ -165,15 +165,18 @@
                     </div>
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-bold mb-1">Data Inicial</label>
-                        <input type="date" id="filtro-data-inicio" class="form-control form-control-sm" onchange="renderizarPainel()">
+                        <input type="date" id="filtro-data-inicio" class="form-control form-control-sm">
                     </div>
                     <div class="col-6 col-md-3">
                         <label class="form-label small fw-bold mb-1">Data Final</label>
-                        <input type="date" id="filtro-data-fim" class="form-control form-control-sm" onchange="renderizarPainel()">
+                        <input type="date" id="filtro-data-fim" class="form-control form-control-sm">
                     </div>
-                    <div class="col-6 col-md-3 d-flex align-items-end">
-                        <button class="btn btn-sm btn-outline-secondary w-100" onclick="limparFiltros()">
-                            <i class="fa-solid fa-rotate-left me-1"></i> Limpar
+                    <div class="col-12 col-md-3 d-flex gap-1 align-items-end mt-2 mt-md-0">
+                        <button class="btn btn-sm btn-vermelho flex-fill" onclick="renderizarPainel()">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Filtrar
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="limparFiltros()" title="Limpar Filtros">
+                            <i class="fa-solid fa-rotate-left"></i>
                         </button>
                     </div>
                 </div>
@@ -352,14 +355,12 @@
             const container = document.getElementById('lista-os');
             container.innerHTML = '';
 
-            // LER VALORES DOS FILTROS
             const filtroStatus = document.getElementById('filtro-status').value;
             const filtroDataInicio = document.getElementById('filtro-data-inicio').value;
             const filtroDataFim = document.getElementById('filtro-data-fim').value;
 
             let emServico = 0, aguardando = 0, prontas = 0;
 
-            // Calcular totais gerais
             bancoOS.forEach(os => {
                 if(os.status === 'Em Serviço') emServico++;
                 if(os.status === 'Aguardando') aguardando++;
@@ -370,14 +371,11 @@
             document.getElementById('total-aguardando').innerText = aguardando;
             document.getElementById('total-prontas').innerText = prontas;
 
-            // FILTRAGEM
             const ordensFiltradas = bancoOS.filter(os => {
-                // Filtro de Status
                 if (filtroStatus !== 'todos' && os.status !== filtroStatus) {
                     return false;
                 }
 
-                // Extrair apenas a data YYYY-MM-DD
                 const dataOS = os.dataInicio.substring(0, 10);
 
                 if (filtroDataInicio && dataOS < filtroDataInicio) {
