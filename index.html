@@ -133,6 +133,9 @@
 </head>
 <body>
 
+    <!-- Canvas Invisível para Pré-Processar Imagem -->
+    <canvas id="canvas-processamento" style="display:none;"></canvas>
+
     <!-- Header Principal -->
     <nav class="navbar navbar-okm sticky-top no-print">
         <div class="container-fluid justify-content-center">
@@ -397,7 +400,7 @@
             if(tela === 'tela-painel') renderizarPainel();
         }
 
-        /* --- FUNÇÃO DE LEITURA DE PLACA POR FOTO (OCR) --- */
+        /* --- LEITOR AVANÇADO DE PLACA COM PRÉ-PROCESSAMENTO --- */
         async function processarFotoPlaca(input) {
             if (!input.files || !input.files[0]) return;
 
@@ -405,38 +408,95 @@
             const statusOcr = document.getElementById('status-ocr');
             statusOcr.style.display = 'block';
             statusOcr.className = 'text-primary small d-block mt-1';
-            statusOcr.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Lendo placa da foto... Aguarde!';
+            statusOcr.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Tratando imagem e lendo placa...';
 
             try {
-                const resultado = await Tesseract.recognize(arquivo, 'eng', {
+                // Prepara a imagem aumentando o contraste
+                const imagemTratada = await otimizarImagemPlaca(arquivo);
+
+                const resultado = await Tesseract.recognize(imagemTratada, 'eng', {
                     logger: m => {
                         if (m.status === 'recognizing text') {
-                            statusOcr.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Analisando imagem (${Math.round(m.progress * 100)}%)...`;
+                            statusOcr.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Processando leitura (${Math.round(m.progress * 100)}%)...`;
                         }
                     }
                 });
 
-                const textoExtraido = resultado.data.text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                let texto = resultado.data.text.toUpperCase().replace(/[^A-Z0-9]/g, '');
                 
-                // Procura padrões de placa brasileira: ABC1D23 (Mercosul) ou ABC1234 (Antiga)
-                const matchPlaca = textoExtraido.match(/[A-Z]{3}[0-9][A-Z0-9][0-9]{2}/);
+                // Tenta extrair padrões conhecidos
+                let placaEncontrada = extrairPlacaValida(texto);
 
-                if (matchPlaca) {
-                    const placaDetectada = matchPlaca[0];
-                    document.getElementById('veiculo-placa').value = placaDetectada;
+                if (placaEncontrada) {
+                    document.getElementById('veiculo-placa').value = placaEncontrada;
                     statusOcr.className = 'text-success small d-block mt-1';
-                    statusOcr.innerHTML = `<i class="fa-solid fa-check me-1"></i> Placa reconhecida: <strong>${placaDetectada}</strong>`;
-                    
-                    // Busca os dados do cliente no histórico caso exista
-                    buscarDadosPorPlaca(placaDetectada);
+                    statusOcr.innerHTML = `<i class="fa-solid fa-check me-1"></i> Placa identificada: <strong>${placaEncontrada}</strong>`;
+                    buscarDadosPorPlaca(placaEncontrada);
                 } else {
                     statusOcr.className = 'text-warning small d-block mt-1';
-                    statusOcr.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Não foi possível identificar a placa com clareza. Digite manualmente ou tire outra foto mais de perto.';
+                    statusOcr.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Não foi possível ler com precisão. Enquadre bem a placa de perto e sem sombras.';
                 }
             } catch (erro) {
                 statusOcr.className = 'text-danger small d-block mt-1';
-                statusOcr.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i> Erro ao ler imagem. Digite a placa manualmente.';
+                statusOcr.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i> Erro na leitura da foto. Digite manualmente.';
             }
+        }
+
+        // Função para aumentar contraste e preto/branco da imagem
+        function otimizarImagemPlaca(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                img.onload = () => {
+                    const canvas = document.getElementById('canvas-processamento');
+                    const ctx = canvas.getContext('2d');
+
+                    // Redimensiona mantendo proporção para no máximo 800px de largura
+                    let largura = img.width;
+                    let altura = img.height;
+                    const maxDim = 800;
+
+                    if (largura > maxDim || altura > maxDim) {
+                        if (largura > altura) {
+                            altura = Math.round((altura * maxDim) / largura);
+                            largura = maxDim;
+                        } else {
+                            largura = Math.round((largura * maxDim) / altura);
+                            altura = maxDim;
+                        }
+                    }
+
+                    canvas.width = largura;
+                    canvas.height = altura;
+                    ctx.drawImage(img, 0, 0, largura, altura);
+
+                    const imgData = ctx.getImageData(0, 0, largura, altura);
+                    const d = imgData.data;
+
+                    // Converte para escala de cinza e aumenta o contraste
+                    for (let i = 0; i < d.length; i += 4) {
+                        const cinza = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+                        const valor = cinza > 120 ? 255 : 0; // Limiarização Binarizada
+                        d[i] = d[i + 1] = d[i + 2] = valor;
+                    }
+
+                    ctx.putImageData(imgData, 0, 0);
+                    resolve(canvas.toDataURL('image/jpeg'));
+                };
+            });
+        }
+
+        // Função de busca de placas do Brasil
+        function extrairPlacaValida(texto) {
+            // Procura Mercosul (3 letras + 1 num + 1 letra + 2 num)
+            let matchMercosul = texto.match(/[A-Z]{3}[0-9][A-Z][0-9]{2}/);
+            if (matchMercosul) return matchMercosul[0];
+
+            // Procura Padrão Antigo (3 letras + 4 num)
+            let matchAntigo = texto.match(/[A-Z]{3}[0-9]{4}/);
+            if (matchAntigo) return matchAntigo[0];
+
+            return null;
         }
 
         function buscarDadosPorPlaca(placaDigitada) {
