@@ -94,10 +94,38 @@
             margin-bottom: 2px;
         }
 
+        /* ESTILOS EXCLUSIVOS PARA A IMPRESSÃO DA NOTA */
         @media print {
-            body { background-color: white; color: black; }
-            .no-print, .bottom-nav, .navbar-okm { display: none !important; }
-            .card-custom { box-shadow: none; border: 1px solid #ccc; }
+            body * {
+                visibility: hidden;
+            }
+            #modalOS, #modalOS * {
+                visibility: visible;
+            }
+            #modalOS {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background: white !important;
+            }
+            .modal-dialog {
+                max-width: 100% !important;
+                margin: 0 !important;
+            }
+            .modal-content {
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .modal-header, .modal-footer, .no-print {
+                display: none !important;
+            }
+            .assinatura-area {
+                margin-top: 50px !important;
+                display: block !important;
+            }
         }
     </style>
 </head>
@@ -285,7 +313,7 @@
                         <h5 class="modal-header-title mb-0 fs-6 fw-bold" id="modal-titulo">Detalhes da OS</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body p-3" id="modal-corpo"></div>
+                    <div class="modal-body p-4" id="modal-corpo"></div>
                     <div class="modal-footer d-flex justify-content-between no-print">
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="excluirOSAtual()">
                             <i class="fa-solid fa-trash me-1"></i> Excluir
@@ -520,30 +548,78 @@
             const formatarData = (dt) => dt && dt !== 'A definir' && !isNaN(new Date(dt).getTime()) ? new Date(dt).toLocaleString('pt-BR') : dt;
 
             document.getElementById('modal-corpo').innerHTML = `
-                <div class="text-center mb-2">
-                    <h6 class="fw-bold mb-0 text-danger">OK.M MOTO PEÇAS</h6>
-                    <small class="text-muted">Ordem de Serviço & Checklist</small>
+                <div class="text-center mb-3">
+                    <img src="logo.jpg.jpeg" style="width: 80px; height: 80px; object-fit: cover;" class="rounded-circle mb-2" onerror="this.style.display='none'">
+                    <h5 class="fw-bold mb-0 text-danger">OK.M MOTO PEÇAS</h5>
+                    <p class="small text-muted mb-0">ORDEM DE SERVIÇO & CHECKLIST</p>
+                    <small class="fw-bold text-dark">${os.id}</small>
                 </div>
-                <hr class="my-2">
-                <p class="mb-1"><strong>Placa:</strong> <span class="badge bg-dark">${os.veiculoPlaca || 'Não informada'}</span></p>
-                <p class="mb-1"><strong>Mecânico:</strong> ${os.mecanico}</p>
-                <p class="mb-1"><strong>Cliente:</strong> ${os.clienteNome} (${os.clienteFone})</p>
-                <p class="mb-1"><strong>Veículo:</strong> ${os.veiculoMarca} ${os.veiculoModelo}</p>
-                <p class="mb-1"><strong>KM Atual:</strong> ${os.veiculoKm} km | <strong>Combustível:</strong> ${os.veiculoCombustivel}</p>
-                <p class="mb-1"><strong>Início:</strong> ${formatarData(os.dataInicio)}</p>
-                <p class="mb-1"><strong>Previsão Término:</strong> ${formatarData(os.dataTermino)}</p>
-                <div class="p-2 bg-light rounded mt-2 border">
-                    <strong>Obs / Entrada / Peças:</strong><br>
-                    <small>${os.checklistObs}</small>
+
+                <table class="table table-bordered table-sm small mb-3">
+                    <tbody>
+                        <tr>
+                            <td class="bg-light fw-bold" style="width: 30%;">Placa:</td>
+                            <td><span class="badge bg-dark fs-6">${os.veiculoPlaca || 'Não informada'}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Mecânico Responsável:</td>
+                            <td>${os.mecanico}</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Cliente / Telefone:</td>
+                            <td>${os.clienteNome} (${os.clienteFone})</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Veículo:</td>
+                            <td>${os.veiculoMarca} ${os.veiculoModelo}</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">KM / Combustível:</td>
+                            <td>${os.veiculoKm} km | ${os.veiculoCombustivel}</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Data Início:</td>
+                            <td>${formatarData(os.dataInicio)}</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Previsão Término:</td>
+                            <td>${formatarData(os.dataTermino)}</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Status:</td>
+                            <td><span class="badge ${os.status === 'Finalizada' ? 'bg-success' : 'bg-danger'}">${os.status}</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="p-2 bg-light rounded border mb-3">
+                    <strong class="small fw-bold text-dark">Obs / Entrada / Peças Solicitadas:</strong>
+                    <div class="small mt-1">${os.checklistObs}</div>
                 </div>
+
                 ${os.servicoRealizado ? `
-                    <div class="p-2 bg-success-subtle rounded mt-2 border border-success">
-                        <strong class="text-success"><i class="fa-solid fa-wrench me-1"></i>Serviço Realizado / Peças Trocadas:</strong><br>
-                        <small class="text-dark">${os.servicoRealizado}</small>
+                    <div class="p-2 bg-light rounded border border-success mb-3">
+                        <strong class="small fw-bold text-success"><i class="fa-solid fa-wrench me-1"></i>Serviço Realizado / Peças Trocadas:</strong>
+                        <div class="small text-dark mt-1">${os.servicoRealizado}</div>
                     </div>
                 ` : ''}
-                <div class="mt-2">
-                    <strong>Status Atual:</strong> <span class="badge ${os.status === 'Finalizada' ? 'bg-success' : 'bg-danger'}">${os.status}</span>
+
+                <!-- ÁREA DE ASSINATURA EXCLUSIVA DA IMPRESSÃO -->
+                <div class="assinatura-area mt-5 pt-3">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div style="border-top: 1px solid #000; margin: 0 10px; padding-top: 5px;">
+                                <small class="fw-bold d-block text-dark">Mecânico: ${os.mecanico}</small>
+                                <small class="text-muted" style="font-size: 10px;">Assinatura do Responsável</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div style="border-top: 1px solid #000; margin: 0 10px; padding-top: 5px;">
+                                <small class="fw-bold d-block text-dark">Cliente: ${os.clienteNome}</small>
+                                <small class="text-muted" style="font-size: 10px;">Assinatura do Cliente</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
 
