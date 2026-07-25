@@ -152,8 +152,12 @@
 
             <!-- Painel de Filtros -->
             <div class="card card-custom p-3 mb-3 border-start border-danger border-4 no-print">
-                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-filter me-1"></i> Filtrar Ordens de Serviço</h6>
+                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-filter me-1"></i> Filtrar / Buscar OS</h6>
                 <div class="row g-2">
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small fw-bold mb-1">Buscar por Placa ou Nome</label>
+                        <input type="text" id="filtro-busca" class="form-control form-control-sm" placeholder="Ex: ABC1D23 ou Tiago">
+                    </div>
                     <div class="col-12 col-md-3">
                         <label class="form-label small fw-bold mb-1">Status</label>
                         <select id="filtro-status" class="form-select form-select-sm">
@@ -163,15 +167,15 @@
                             <option value="Finalizada">Finalizadas (Baixadas)</option>
                         </select>
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <label class="form-label small fw-bold mb-1">Data Inicial</label>
                         <input type="date" id="filtro-data-inicio" class="form-control form-control-sm">
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-2">
                         <label class="form-label small fw-bold mb-1">Data Final</label>
                         <input type="date" id="filtro-data-fim" class="form-control form-control-sm">
                     </div>
-                    <div class="col-12 col-md-3 d-flex gap-1 align-items-end mt-2 mt-md-0">
+                    <div class="col-12 col-md-2 d-flex gap-1 align-items-end mt-2 mt-md-0">
                         <button class="btn btn-sm btn-vermelho flex-fill" onclick="renderizarPainel()">
                             <i class="fa-solid fa-magnifying-glass me-1"></i> Filtrar
                         </button>
@@ -214,7 +218,13 @@
 
                         <hr class="my-3">
 
+                        <!-- Busca / Preenchimento de Placa -->
                         <div class="row g-2 mb-3">
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo (Digite para puxar dados cadastrados)</label>
+                                <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="Ex: ABC-1234 ou ABC1D23" oninput="buscarDadosPorPlaca(this.value)" required>
+                                <small class="text-muted" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check text-success me-1"></i>Dados do veículo carregados do histórico!</small>
+                            </div>
                             <div class="col-7">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user text-danger me-1"></i> Nome do Cliente</label>
                                 <input type="text" id="cliente-nome" class="form-control form-control-sm" placeholder="Ex: Tiago" required>
@@ -347,6 +357,27 @@
             if(tela === 'tela-painel') renderizarPainel();
         }
 
+        function buscarDadosPorPlaca(placaDigitada) {
+            const placaFormatada = placaDigitada.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            const msgContainer = document.getElementById('msg-placa-encontrada');
+
+            if (placaFormatada.length >= 6) {
+                const veiculoEncontrado = bancoOS.find(os => 
+                    os.veiculoPlaca && os.veiculoPlaca.toUpperCase().replace(/[^A-Z0-9]/g, '') === placaFormatada
+                );
+
+                if (veiculoEncontrado) {
+                    document.getElementById('cliente-nome').value = veiculoEncontrado.clienteNome || '';
+                    document.getElementById('cliente-fone').value = veiculoEncontrado.clienteFone || '';
+                    document.getElementById('veiculo-marca').value = veiculoEncontrado.veiculoMarca || '';
+                    document.getElementById('veiculo-modelo').value = veiculoEncontrado.veiculoModelo || '';
+                    msgContainer.style.display = 'block';
+                    return;
+                }
+            }
+            msgContainer.style.display = 'none';
+        }
+
         function salvarOS(e) {
             e.preventDefault();
 
@@ -355,6 +386,7 @@
                 mecanico: document.getElementById('mecanico').value,
                 dataInicio: document.getElementById('data-inicio').value,
                 dataTermino: document.getElementById('data-termino').value || 'A definir',
+                veiculoPlaca: document.getElementById('veiculo-placa').value.toUpperCase(),
                 clienteNome: document.getElementById('cliente-nome').value,
                 clienteFone: document.getElementById('cliente-fone').value,
                 veiculoMarca: document.getElementById('veiculo-marca').value,
@@ -371,6 +403,7 @@
 
             document.getElementById('form-os').reset();
             document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
+            document.getElementById('msg-placa-encontrada').style.display = 'none';
             
             alert('Ordem de Serviço criada com sucesso!');
             trocarTela('tela-painel');
@@ -380,6 +413,7 @@
             const container = document.getElementById('lista-os');
             container.innerHTML = '';
 
+            const filtroBusca = document.getElementById('filtro-busca').value.toLowerCase().trim();
             const filtroStatus = document.getElementById('filtro-status').value;
             const valDataInicio = document.getElementById('filtro-data-inicio').value;
             const valDataFim = document.getElementById('filtro-data-fim').value;
@@ -397,6 +431,14 @@
             document.getElementById('total-prontas').innerText = prontas;
 
             const ordensFiltradas = bancoOS.filter(os => {
+                if (filtroBusca) {
+                    const placaOS = (os.veiculoPlaca || '').toLowerCase();
+                    const nomeOS = (os.clienteNome || '').toLowerCase();
+                    if (!placaOS.includes(filtroBusca) && !nomeOS.includes(filtroBusca)) {
+                        return false;
+                    }
+                }
+
                 if (filtroStatus !== 'todos' && os.status !== filtroStatus) {
                     return false;
                 }
@@ -438,7 +480,10 @@
 
                 item.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <strong class="text-danger" onclick="abrirModalOS('${os.id}')" style="cursor:pointer;">${os.id}</strong>
+                        <div>
+                            <strong class="text-danger" onclick="abrirModalOS('${os.id}')" style="cursor:pointer;">${os.id}</strong>
+                            ${os.veiculoPlaca ? `<span class="badge bg-dark ms-2">${os.veiculoPlaca}</span>` : ''}
+                        </div>
                         <div>
                             <small class="text-muted me-2"><i class="fa-regular fa-calendar me-1"></i>${dataFormatada}</small>
                             <span class="badge ${badgeColor}">${os.status}</span>
@@ -459,6 +504,7 @@
         }
 
         function limparFiltros() {
+            document.getElementById('filtro-busca').value = '';
             document.getElementById('filtro-status').value = 'todos';
             document.getElementById('filtro-data-inicio').value = '';
             document.getElementById('filtro-data-fim').value = '';
@@ -479,6 +525,7 @@
                     <small class="text-muted">Ordem de Serviço & Checklist</small>
                 </div>
                 <hr class="my-2">
+                <p class="mb-1"><strong>Placa:</strong> <span class="badge bg-dark">${os.veiculoPlaca || 'Não informada'}</span></p>
                 <p class="mb-1"><strong>Mecânico:</strong> ${os.mecanico}</p>
                 <p class="mb-1"><strong>Cliente:</strong> ${os.clienteNome} (${os.clienteFone})</p>
                 <p class="mb-1"><strong>Veículo:</strong> ${os.veiculoMarca} ${os.veiculoModelo}</p>
