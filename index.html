@@ -277,15 +277,39 @@
                     </div>
                     <div class="modal-body p-3" id="modal-corpo"></div>
                     <div class="modal-footer d-flex justify-content-between no-print">
-                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="excluirOSAtual()">
+                            <i class="fa-solid fa-trash me-1"></i> Excluir
+                        </button>
                         <div>
                             <button type="button" class="btn btn-sm btn-outline-dark me-1" onclick="imprimirOS()">
-                                <i class="fa-solid fa-print me-1"></i> Imprimir OS
+                                <i class="fa-solid fa-print me-1"></i> Imprimir
                             </button>
-                            <button type="button" class="btn btn-sm btn-success" id="btn-dar-baixa" onclick="darBaixaOS()">
+                            <button type="button" class="btn btn-sm btn-success" id="btn-dar-baixa" onclick="abrirModalBaixa()">
                                 <i class="fa-solid fa-check me-1"></i> Baixa de Nota
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== MODAL DE CONFIRMAÇÃO DE BAIXA ==================== -->
+        <div class="modal fade" id="modalBaixa" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title fs-6 fw-bold"><i class="fa-solid fa-check-circle me-1"></i> Finalizar Serviço & Dar Baixa</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-3">
+                        <label class="form-label fw-bold small"><i class="fa-solid fa-wrench text-success me-1"></i> O que foi feito no veículo?</label>
+                        <textarea id="servico-realizado-texto" class="form-control form-control-sm" rows="4" placeholder="Descreva as peças trocadas, serviços realizados, mão de obra, valores..."></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-success fw-bold" onclick="confirmarBaixaOS()">
+                            <i class="fa-solid fa-check me-1"></i> Confirmar Baixa
+                        </button>
                     </div>
                 </div>
             </div>
@@ -338,6 +362,7 @@
                 veiculoKm: document.getElementById('veiculo-km').value,
                 veiculoCombustivel: document.getElementById('veiculo-combustivel').value,
                 checklistObs: document.getElementById('checklist-obs').value || 'Nenhuma observação',
+                servicoRealizado: '',
                 status: 'Em Serviço'
             };
 
@@ -372,18 +397,15 @@
             document.getElementById('total-prontas').innerText = prontas;
 
             const ordensFiltradas = bancoOS.filter(os => {
-                // 1. Filtro de Status
                 if (filtroStatus !== 'todos' && os.status !== filtroStatus) {
                     return false;
                 }
 
-                // 2. Filtro de Data resiliente
                 if (valDataInicio || valDataFim) {
                     if (!os.dataInicio) return false;
                     
-                    // Converte a data da OS para formato YYYY-MM-DD ignorando horários
                     const dateOS = new Date(os.dataInicio);
-                    if (isNaN(dateOS.getTime())) return true; // Se der erro de conversão, mantem na lista por segurança
+                    if (isNaN(dateOS.getTime())) return true;
 
                     const dataOSFormatted = dateOS.toISOString().split('T')[0];
 
@@ -413,20 +435,24 @@
 
                 const item = document.createElement('div');
                 item.className = 'card card-custom mb-2 p-3 border-start border-4 ' + (os.status === 'Finalizada' ? 'border-success' : 'border-danger');
-                item.onclick = () => abrirModalOS(os.id);
-                item.style.cursor = 'pointer';
 
                 item.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <strong class="text-danger">${os.id}</strong>
+                        <strong class="text-danger" onclick="abrirModalOS('${os.id}')" style="cursor:pointer;">${os.id}</strong>
                         <div>
                             <small class="text-muted me-2"><i class="fa-regular fa-calendar me-1"></i>${dataFormatada}</small>
                             <span class="badge ${badgeColor}">${os.status}</span>
+                            <button class="btn btn-sm text-danger ms-2 p-0 border-0" title="Excluir OS" onclick="deletarOSDirect('${os.id}', event)">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="fw-bold text-dark">${os.clienteNome} <small class="text-muted">(${os.clienteFone})</small></div>
-                    <div class="small text-secondary"><i class="fa-solid fa-motorcycle me-1"></i>${os.veiculoMarca} ${os.veiculoModelo} | KM: ${os.veiculoKm}</div>
-                    <div class="small text-muted mt-1"><i class="fa-solid fa-user-gear me-1"></i>Mecânico: ${os.mecanico}</div>
+                    <div style="cursor:pointer;" onclick="abrirModalOS('${os.id}')">
+                        <div class="fw-bold text-dark">${os.clienteNome} <small class="text-muted">(${os.clienteFone})</small></div>
+                        <div class="small text-secondary"><i class="fa-solid fa-motorcycle me-1"></i>${os.veiculoMarca} ${os.veiculoModelo} | KM: ${os.veiculoKm}</div>
+                        <div class="small text-muted mt-1"><i class="fa-solid fa-user-gear me-1"></i>Mecânico: ${os.mecanico}</div>
+                        ${os.servicoRealizado ? `<div class="small text-success mt-1 fw-semibold"><i class="fa-solid fa-check me-1"></i>Serviço: ${os.servicoRealizado}</div>` : ''}
+                    </div>
                 `;
                 container.appendChild(item);
             });
@@ -460,9 +486,15 @@
                 <p class="mb-1"><strong>Início:</strong> ${formatarData(os.dataInicio)}</p>
                 <p class="mb-1"><strong>Previsão Término:</strong> ${formatarData(os.dataTermino)}</p>
                 <div class="p-2 bg-light rounded mt-2 border">
-                    <strong>Obs/Checklist:</strong><br>
+                    <strong>Obs / Entrada / Peças:</strong><br>
                     <small>${os.checklistObs}</small>
                 </div>
+                ${os.servicoRealizado ? `
+                    <div class="p-2 bg-success-subtle rounded mt-2 border border-success">
+                        <strong class="text-success"><i class="fa-solid fa-wrench me-1"></i>Serviço Realizado / Peças Trocadas:</strong><br>
+                        <small class="text-dark">${os.servicoRealizado}</small>
+                    </div>
+                ` : ''}
                 <div class="mt-2">
                     <strong>Status Atual:</strong> <span class="badge ${os.status === 'Finalizada' ? 'bg-success' : 'bg-danger'}">${os.status}</span>
                 </div>
@@ -475,14 +507,44 @@
             modal.show();
         }
 
-        function darBaixaOS() {
+        function abrirModalBaixa() {
+            bootstrap.Modal.getInstance(document.getElementById('modalOS')).hide();
+            document.getElementById('servico-realizado-texto').value = '';
+            const modalBaixa = new bootstrap.Modal(document.getElementById('modalBaixa'));
+            modalBaixa.show();
+        }
+
+        function confirmarBaixaOS() {
             if(!osSelecionadaId) return;
             const os = bancoOS.find(item => item.id === osSelecionadaId);
+            const detalheServico = document.getElementById('servico-realizado-texto').value;
+
             if(os) {
                 os.status = 'Finalizada';
+                os.servicoRealizado = detalheServico || 'Serviço concluído';
                 localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
+                
                 alert(`Baixa efetuada com sucesso para a ${os.id}! Status alterado para Finalizada.`);
+                bootstrap.Modal.getInstance(document.getElementById('modalBaixa')).hide();
+                renderizarPainel();
+            }
+        }
+
+        function excluirOSAtual() {
+            if(!osSelecionadaId) return;
+            if(confirm(`Tem certeza que deseja excluir permanentemente a nota ${osSelecionadaId}?`)) {
+                bancoOS = bancoOS.filter(item => item.id !== osSelecionadaId);
+                localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
                 bootstrap.Modal.getInstance(document.getElementById('modalOS')).hide();
+                renderizarPainel();
+            }
+        }
+
+        function deletarOSDirect(id, e) {
+            e.stopPropagation();
+            if(confirm(`Tem certeza que deseja excluir permanentemente a nota ${id}?`)) {
+                bancoOS = bancoOS.filter(item => item.id !== id);
+                localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
                 renderizarPainel();
             }
         }
