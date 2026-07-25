@@ -8,6 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tesseract.js para OCR de Placa por Foto -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         :root {
             --vermelho-okm: #A81C1C;
@@ -246,12 +248,22 @@
 
                         <hr class="my-3">
 
-                        <!-- Busca / Preenchimento de Placa -->
+                        <!-- Busca / Preenchimento de Placa e Leitor por Câmera -->
                         <div class="row g-2 mb-3">
                             <div class="col-12">
-                                <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo (Digite para puxar dados cadastrados)</label>
-                                <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="Ex: ABC-1234 ou ABC1D23" oninput="buscarDadosPorPlaca(this.value)" required>
-                                <small class="text-muted" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check text-success me-1"></i>Dados do veículo carregados do histórico!</small>
+                                <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo</label>
+                                <div class="input-group">
+                                    <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="Ex: ABC-1234 ou ABC1D23" oninput="buscarDadosPorPlaca(this.value)" required>
+                                    
+                                    <!-- Botão de Câmera/Foto -->
+                                    <button class="btn btn-outline-danger btn-sm" type="button" onclick="document.getElementById('input-foto-placa').click()" title="Tirar foto da placa">
+                                        <i class="fa-solid fa-camera me-1"></i> Foto Placa
+                                    </button>
+                                </div>
+                                <input type="file" id="input-foto-placa" accept="image/*" capture="environment" style="display: none;" onchange="processarFotoPlaca(this)">
+                                
+                                <small class="text-muted d-block mt-1" id="status-ocr" style="display:none;"></small>
+                                <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check me-1"></i>Dados do veículo carregados do histórico!</small>
                             </div>
                             <div class="col-7">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user text-danger me-1"></i> Nome do Cliente</label>
@@ -385,6 +397,48 @@
             if(tela === 'tela-painel') renderizarPainel();
         }
 
+        /* --- FUNÇÃO DE LEITURA DE PLACA POR FOTO (OCR) --- */
+        async function processarFotoPlaca(input) {
+            if (!input.files || !input.files[0]) return;
+
+            const arquivo = input.files[0];
+            const statusOcr = document.getElementById('status-ocr');
+            statusOcr.style.display = 'block';
+            statusOcr.className = 'text-primary small d-block mt-1';
+            statusOcr.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Lendo placa da foto... Aguarde!';
+
+            try {
+                const resultado = await Tesseract.recognize(arquivo, 'eng', {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            statusOcr.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Analisando imagem (${Math.round(m.progress * 100)}%)...`;
+                        }
+                    }
+                });
+
+                const textoExtraido = resultado.data.text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                
+                // Procura padrões de placa brasileira: ABC1D23 (Mercosul) ou ABC1234 (Antiga)
+                const matchPlaca = textoExtraido.match(/[A-Z]{3}[0-9][A-Z0-9][0-9]{2}/);
+
+                if (matchPlaca) {
+                    const placaDetectada = matchPlaca[0];
+                    document.getElementById('veiculo-placa').value = placaDetectada;
+                    statusOcr.className = 'text-success small d-block mt-1';
+                    statusOcr.innerHTML = `<i class="fa-solid fa-check me-1"></i> Placa reconhecida: <strong>${placaDetectada}</strong>`;
+                    
+                    // Busca os dados do cliente no histórico caso exista
+                    buscarDadosPorPlaca(placaDetectada);
+                } else {
+                    statusOcr.className = 'text-warning small d-block mt-1';
+                    statusOcr.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i> Não foi possível identificar a placa com clareza. Digite manualmente ou tire outra foto mais de perto.';
+                }
+            } catch (erro) {
+                statusOcr.className = 'text-danger small d-block mt-1';
+                statusOcr.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i> Erro ao ler imagem. Digite a placa manualmente.';
+            }
+        }
+
         function buscarDadosPorPlaca(placaDigitada) {
             const placaFormatada = placaDigitada.toUpperCase().replace(/[^A-Z0-9]/g, '');
             const msgContainer = document.getElementById('msg-placa-encontrada');
@@ -432,6 +486,7 @@
             document.getElementById('form-os').reset();
             document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
             document.getElementById('msg-placa-encontrada').style.display = 'none';
+            document.getElementById('status-ocr').style.display = 'none';
             
             alert('Ordem de Serviço criada com sucesso!');
             trocarTela('tela-painel');
