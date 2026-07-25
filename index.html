@@ -150,7 +150,7 @@
                 </div>
             </div>
 
-            <!-- Painel de Filtros com Botão de Filtrar -->
+            <!-- Painel de Filtros -->
             <div class="card card-custom p-3 mb-3 border-start border-danger border-4 no-print">
                 <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-filter me-1"></i> Filtrar Ordens de Serviço</h6>
                 <div class="row g-2">
@@ -356,8 +356,8 @@
             container.innerHTML = '';
 
             const filtroStatus = document.getElementById('filtro-status').value;
-            const filtroDataInicio = document.getElementById('filtro-data-inicio').value;
-            const filtroDataFim = document.getElementById('filtro-data-fim').value;
+            const valDataInicio = document.getElementById('filtro-data-inicio').value;
+            const valDataFim = document.getElementById('filtro-data-fim').value;
 
             let emServico = 0, aguardando = 0, prontas = 0;
 
@@ -372,17 +372,27 @@
             document.getElementById('total-prontas').innerText = prontas;
 
             const ordensFiltradas = bancoOS.filter(os => {
+                // 1. Filtro de Status
                 if (filtroStatus !== 'todos' && os.status !== filtroStatus) {
                     return false;
                 }
 
-                const dataOS = os.dataInicio.substring(0, 10);
+                // 2. Filtro de Data resiliente
+                if (valDataInicio || valDataFim) {
+                    if (!os.dataInicio) return false;
+                    
+                    // Converte a data da OS para formato YYYY-MM-DD ignorando horários
+                    const dateOS = new Date(os.dataInicio);
+                    if (isNaN(dateOS.getTime())) return true; // Se der erro de conversão, mantem na lista por segurança
 
-                if (filtroDataInicio && dataOS < filtroDataInicio) {
-                    return false;
-                }
-                if (filtroDataFim && dataOS > filtroDataFim) {
-                    return false;
+                    const dataOSFormatted = dateOS.toISOString().split('T')[0];
+
+                    if (valDataInicio && dataOSFormatted < valDataInicio) {
+                        return false;
+                    }
+                    if (valDataFim && dataOSFormatted > valDataFim) {
+                        return false;
+                    }
                 }
 
                 return true;
@@ -395,7 +405,11 @@
 
             ordensFiltradas.forEach(os => {
                 const badgeColor = os.status === 'Finalizada' ? 'bg-success' : 'bg-danger';
-                const dataFormatada = new Date(os.dataInicio).toLocaleDateString('pt-BR');
+                
+                let dataFormatada = os.dataInicio;
+                if (os.dataInicio && !isNaN(new Date(os.dataInicio).getTime())) {
+                    dataFormatada = new Date(os.dataInicio).toLocaleDateString('pt-BR');
+                }
 
                 const item = document.createElement('div');
                 item.className = 'card card-custom mb-2 p-3 border-start border-4 ' + (os.status === 'Finalizada' ? 'border-success' : 'border-danger');
@@ -431,7 +445,7 @@
             if(!os) return;
 
             document.getElementById('modal-titulo').innerText = `${os.id} - ${os.clienteNome}`;
-            const formatarData = (dt) => dt && dt !== 'A definir' ? new Date(dt).toLocaleString('pt-BR') : 'A definir';
+            const formatarData = (dt) => dt && dt !== 'A definir' && !isNaN(new Date(dt).getTime()) ? new Date(dt).toLocaleString('pt-BR') : dt;
 
             document.getElementById('modal-corpo').innerHTML = `
                 <div class="text-center mb-2">
