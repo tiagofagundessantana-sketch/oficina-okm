@@ -94,6 +94,50 @@
             margin-bottom: 2px;
         }
 
+        /* Estilos das Miniaturas de Fotos da Moto */
+        .preview-foto-item {
+            position: relative;
+            width: 75px;
+            height: 75px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid var(--vermelho-okm);
+        }
+        .preview-foto-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-foto-item .btn-remove-foto {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(168, 28, 28, 0.85);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .foto-entrada-detalhe {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .foto-entrada-detalhe:hover {
+            transform: scale(1.03);
+        }
+
         /* ESTILOS EXCLUSIVOS PARA A IMPRESSÃO DA NOTA */
         @media print {
             body * {
@@ -119,7 +163,7 @@
                 border: none !important;
                 box-shadow: none !important;
             }
-            .modal-header, .modal-footer, .no-print {
+            .modal-header, .modal-footer, .no-print, .fotos-no-print {
                 display: none !important;
             }
             .assinatura-area {
@@ -295,6 +339,24 @@
                             <textarea id="checklist-obs" class="form-control form-control-sm" rows="3" placeholder="Avarias pré-existentes, observações do cliente, serviços solicitados..."></textarea>
                         </div>
 
+                        <!-- SEÇÃO DE FOTOS DA MOTO (ENTRADA) -->
+                        <div class="p-3 bg-light rounded border border-danger border-opacity-50 mb-3">
+                            <label class="form-label fw-bold small text-danger d-flex align-items-center justify-content-between mb-2">
+                                <span><i class="fa-solid fa-camera me-1"></i> Fotos de Entrada da Moto (Avarias/Estado)</span>
+                                <small class="text-muted fw-normal">(Até 4 fotos)</small>
+                            </label>
+                            
+                            <input type="file" id="input-fotos-entrada" accept="image/*" multiple capture="environment" style="display: none;" onchange="adicionarFotosEntrada(this)">
+                            
+                            <div class="d-flex align-items-center gap-2 flex-wrap" id="container-previews-fotos">
+                                <button type="button" class="btn btn-outline-danger btn-sm p-3 d-flex flex-column align-items-center justify-content-center" style="width: 75px; height: 75px; border-style: dashed;" onclick="document.getElementById('input-fotos-entrada').click()">
+                                    <i class="fa-solid fa-plus fs-5"></i>
+                                    <span style="font-size: 10px;" class="fw-bold mt-1">Tirar Foto</span>
+                                </button>
+                                <!-- Previews das fotos aparecerão aqui -->
+                            </div>
+                        </div>
+
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-vermelho py-2">
                                 <i class="fa-solid fa-save me-1"></i> Gerar Ordem de Serviço
@@ -307,7 +369,7 @@
 
         <!-- ==================== MODAL DE DETALHES ==================== -->
         <div class="modal fade" id="modalOS" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header bg-dark text-white">
                         <h5 class="modal-header-title mb-0 fs-6 fw-bold" id="modal-titulo">Detalhes da OS</h5>
@@ -373,6 +435,7 @@
         const SENHA_EXCLUSAO = "4958";
         let bancoOS = JSON.parse(localStorage.getItem('okm_ordens_servico')) || [];
         let osSelecionadaId = null;
+        let fotosEntradaTemp = []; // Guarda as fotos comprimidas da nova OS
 
         document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
 
@@ -384,6 +447,81 @@
             document.getElementById('nav-nova-os').classList.toggle('active', tela === 'tela-nova-os');
 
             if(tela === 'tela-painel') renderizarPainel();
+        }
+
+        /* --- LÓGICA DE FOTOS DA MOTO --- */
+        async function adicionarFotosEntrada(input) {
+            if (!input.files || input.files.length === 0) return;
+
+            const arquivos = Array.from(input.files);
+
+            for (let arq of arquivos) {
+                if (fotosEntradaTemp.length >= 4) {
+                    alert('Limite de 4 fotos atingido!');
+                    break;
+                }
+                const fotoBase64 = await comprimirImagem(arq);
+                fotosEntradaTemp.push(fotoBase64);
+            }
+
+            renderizarPreviewsFotos();
+            input.value = ''; // reseta
+        }
+
+        function comprimirImagem(file) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    let largura = img.width;
+                    let altura = img.height;
+                    const maxDim = 800; // Reduz resolução para não pesar o navegador
+
+                    if (largura > maxDim || altura > maxDim) {
+                        if (largura > altura) {
+                            altura = Math.round((altura * maxDim) / largura);
+                            largura = maxDim;
+                        } else {
+                            largura = Math.round((largura * maxDim) / altura);
+                            altura = maxDim;
+                        }
+                    }
+
+                    canvas.width = largura;
+                    canvas.height = altura;
+                    ctx.drawImage(img, 0, 0, largura, altura);
+
+                    // Qualidade JPEG 0.6 para armazenar rápido e leve
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+            });
+        }
+
+        function renderizarPreviewsFotos() {
+            const container = document.getElementById('container-previews-fotos');
+            // Remove previews antigos mantendo o botão
+            const itemsAntigos = container.querySelectorAll('.preview-foto-item');
+            itemsAntigos.forEach(el => el.remove());
+
+            fotosEntradaTemp.forEach((foto, idx) => {
+                const div = document.createElement('div');
+                div.className = 'preview-foto-item';
+                div.innerHTML = `
+                    <img src="${foto}" alt="Foto ${idx + 1}">
+                    <button class="btn-remove-foto" type="button" onclick="removerFotoTemp(${idx})" title="Remover Foto">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function removerFotoTemp(index) {
+            fotosEntradaTemp.splice(index, 1);
+            renderizarPreviewsFotos();
         }
 
         function buscarDadosPorPlaca(placaDigitada) {
@@ -423,16 +561,24 @@
                 veiculoKm: document.getElementById('veiculo-km').value,
                 veiculoCombustivel: document.getElementById('veiculo-combustivel').value,
                 checklistObs: document.getElementById('checklist-obs').value || 'Nenhuma observação',
+                fotosEntrada: [...fotosEntradaTemp],
                 servicoRealizado: '',
                 status: 'Em Serviço'
             };
 
             bancoOS.unshift(novaOS);
-            localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
+            
+            try {
+                localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
+            } catch(err) {
+                alert("Atenção: Espaço de memória cheio no navegador. As fotos puderam não ser salvas completamente.");
+            }
 
             document.getElementById('form-os').reset();
             document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
             document.getElementById('msg-placa-encontrada').style.display = 'none';
+            fotosEntradaTemp = [];
+            renderizarPreviewsFotos();
             
             alert('Ordem de Serviço criada com sucesso!');
             trocarTela('tela-painel');
@@ -498,6 +644,7 @@
 
             ordensFiltradas.forEach(os => {
                 const badgeColor = os.status === 'Finalizada' ? 'bg-success' : 'bg-danger';
+                const qtdFotos = os.fotosEntrada ? os.fotosEntrada.length : 0;
                 
                 let dataFormatada = os.dataInicio;
                 if (os.dataInicio && !isNaN(new Date(os.dataInicio).getTime())) {
@@ -512,6 +659,7 @@
                         <div>
                             <strong class="text-danger" onclick="abrirModalOS('${os.id}')" style="cursor:pointer;">${os.id}</strong>
                             ${os.veiculoPlaca ? `<span class="badge bg-dark ms-2">${os.veiculoPlaca}</span>` : ''}
+                            ${qtdFotos > 0 ? `<span class="badge bg-secondary ms-1" title="${qtdFotos} fotos registradas"><i class="fa-solid fa-camera"></i> ${qtdFotos}</span>` : ''}
                         </div>
                         <div>
                             <small class="text-muted me-2"><i class="fa-regular fa-calendar me-1"></i>${dataFormatada}</small>
@@ -547,6 +695,22 @@
 
             document.getElementById('modal-titulo').innerText = `${os.id} - ${os.clienteNome}`;
             const formatarData = (dt) => dt && dt !== 'A definir' && !isNaN(new Date(dt).getTime()) ? new Date(dt).toLocaleString('pt-BR') : dt;
+
+            let htmlFotos = '';
+            if (os.fotosEntrada && os.fotosEntrada.length > 0) {
+                htmlFotos = `
+                    <div class="p-2 bg-light rounded border mb-3 fotos-no-print">
+                        <strong class="small fw-bold text-dark d-block mb-2"><i class="fa-solid fa-camera me-1"></i>Fotos de Entrada da Moto:</strong>
+                        <div class="row g-2">
+                            ${os.fotosEntrada.map(f => `
+                                <div class="col-3">
+                                    <img src="${f}" class="foto-entrada-detalhe" onclick="window.open('${f}', '_blank')" title="Clique para ampliar">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
 
             document.getElementById('modal-corpo').innerHTML = `
                 <div class="text-center mb-3">
@@ -597,6 +761,8 @@
                     <strong class="small fw-bold text-dark">Obs / Entrada / Peças Solicitadas:</strong>
                     <div class="small mt-1">${os.checklistObs}</div>
                 </div>
+
+                ${htmlFotos}
 
                 ${os.servicoRealizado ? `
                     <div class="p-2 bg-light rounded border border-success mb-3">
