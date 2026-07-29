@@ -275,6 +275,10 @@
                         
                         <div class="row g-2 mb-3">
                             <div class="col-12">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-user-pen text-danger me-1"></i> Responsável pela Abertura da Ordem de Serviço</label>
+                                <input type="text" id="atendente" class="form-control form-control-sm" placeholder="Nome do atendente / recepcionista" required>
+                            </div>
+                            <div class="col-12">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user-gear text-danger me-1"></i> Mecânico Responsável</label>
                                 <input type="text" id="mecanico" class="form-control form-control-sm" placeholder="Nome do mecânico" required>
                             </div>
@@ -548,11 +552,14 @@
         function salvarOS(e) {
             e.preventDefault();
 
+            const dataTerminoVal = document.getElementById('data-termino').value;
+
             const novaOS = {
                 id: 'OS-' + Math.floor(1000 + Math.random() * 9000),
+                atendente: document.getElementById('atendente').value,
                 mecanico: document.getElementById('mecanico').value,
                 dataInicio: document.getElementById('data-inicio').value,
-                dataTermino: document.getElementById('data-termino').value || 'A definir',
+                dataTermino: dataTerminoVal ? dataTerminoVal : 'A definir',
                 veiculoPlaca: document.getElementById('veiculo-placa').value.toUpperCase(),
                 clienteNome: document.getElementById('cliente-nome').value,
                 clienteFone: document.getElementById('cliente-fone').value,
@@ -672,7 +679,7 @@
                     <div style="cursor:pointer;" onclick="abrirModalOS('${os.id}')">
                         <div class="fw-bold text-dark">${os.clienteNome} <small class="text-muted">(${os.clienteFone})</small></div>
                         <div class="small text-secondary"><i class="fa-solid fa-motorcycle me-1"></i>${os.veiculoMarca} ${os.veiculoModelo} | KM: ${os.veiculoKm}</div>
-                        <div class="small text-muted mt-1"><i class="fa-solid fa-user-gear me-1"></i>Mecânico: ${os.mecanico}</div>
+                        <div class="small text-muted mt-1"><i class="fa-solid fa-user-pen me-1"></i>Atendente: ${os.atendente || 'Não informado'} | <i class="fa-solid fa-user-gear me-1"></i>Mecânico: ${os.mecanico}</div>
                         ${os.servicoRealizado ? `<div class="small text-success mt-1 fw-semibold"><i class="fa-solid fa-check me-1"></i>Serviço: ${os.servicoRealizado}</div>` : ''}
                     </div>
                 `;
@@ -725,6 +732,10 @@
                         <tr>
                             <td class="bg-light fw-bold" style="width: 30%;">Placa:</td>
                             <td><span class="badge bg-dark fs-6">${os.veiculoPlaca || 'Não informada'}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Responsável Abertura:</td>
+                            <td>${os.atendente || 'Não informado'}</td>
                         </tr>
                         <tr>
                             <td class="bg-light fw-bold">Mecânico Responsável:</td>
