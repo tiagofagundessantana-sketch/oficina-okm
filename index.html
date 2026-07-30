@@ -155,9 +155,10 @@
             margin-bottom: 6px;
         }
 
+        /* CONFIGURAÇÕES DE IMPRESSÃO COM LOGO BEM NO TOPO */
         @media print {
             @page {
-                margin: 5mm; /* Reduz a margem superior da folha */
+                margin: 0mm !important; /* Zera margens do papel */
             }
             body * {
                 visibility: hidden;
@@ -170,7 +171,7 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                margin: 0;
+                margin: 0 !important;
                 padding: 0 !important;
                 background: white !important;
             }
@@ -184,7 +185,8 @@
                 padding: 0 !important;
             }
             .modal-body {
-                padding-top: 0 !important; /* Puxa a logo mais para cima no papel */
+                padding-top: 0 !important;
+                margin-top: -15px !important; /* Sobe a logo ao máximo */
             }
             .modal-header, .modal-footer, .no-print, .fotos-no-print {
                 display: none !important;
@@ -192,6 +194,9 @@
             .header-impressao {
                 margin-top: 0 !important;
                 padding-top: 0 !important;
+            }
+            .header-impressao img {
+                margin-top: 0 !important;
             }
             .assinatura-area {
                 margin-top: 30px !important;
