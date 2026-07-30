@@ -433,15 +433,45 @@
         </button>
     </div>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <script>
+        // CONFIGURAÇÕES DO FIREBASE (Cole suas credenciais aqui)
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "seu-projeto.firebaseapp.com",
+            projectId: "seu-projeto-id",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abc123def456"
+        };
+
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const SENHA_EXCLUSAO = "4958";
-        let bancoOS = JSON.parse(localStorage.getItem('okm_ordens_servico')) || [];
+        let bancoOS = [];
         let osSelecionadaId = null;
-        let fotosEntradaTemp = []; // Guarda as fotos comprimidas da nova OS
+        let fotosEntradaTemp = [];
 
         document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
+
+        // ESCUTA EM TEMPO REAL NO FIRESTORE
+        db.collection("ordens_servico").onSnapshot((snapshot) => {
+            bancoOS = [];
+            snapshot.forEach((doc) => {
+                bancoOS.push({ docId: doc.id, ...doc.data() });
+            });
+            renderizarPainel();
+        }, (error) => {
+            console.error("Erro ao carregar Ordens de Serviço do Firestore: ", error);
+        });
 
         function trocarTela(tela) {
             document.getElementById('tela-painel').style.display = tela === 'tela-painel' ? 'block' : 'none';
@@ -469,7 +499,7 @@
             }
 
             renderizarPreviewsFotos();
-            input.value = ''; // reseta
+            input.value = '';
         }
 
         function comprimirImagem(file) {
@@ -482,7 +512,7 @@
 
                     let largura = img.width;
                     let altura = img.height;
-                    const maxDim = 800; // Reduz resolução para não pesar o navegador
+                    const maxDim = 800;
 
                     if (largura > maxDim || altura > maxDim) {
                         if (largura > altura) {
@@ -498,7 +528,6 @@
                     canvas.height = altura;
                     ctx.drawImage(img, 0, 0, largura, altura);
 
-                    // Qualidade JPEG 0.6 para armazenar rápido e leve
                     resolve(canvas.toDataURL('image/jpeg', 0.6));
                 };
             });
@@ -506,7 +535,6 @@
 
         function renderizarPreviewsFotos() {
             const container = document.getElementById('container-previews-fotos');
-            // Remove previews antigos mantendo o botão
             const itemsAntigos = container.querySelectorAll('.preview-foto-item');
             itemsAntigos.forEach(el => el.remove());
 
@@ -549,7 +577,7 @@
             msgContainer.style.display = 'none';
         }
 
-        function salvarOS(e) {
+        async function salvarOS(e) {
             e.preventDefault();
 
             const dataTerminoVal = document.getElementById('data-termino').value;
@@ -570,25 +598,25 @@
                 checklistObs: document.getElementById('checklist-obs').value || 'Nenhuma observação',
                 fotosEntrada: [...fotosEntradaTemp],
                 servicoRealizado: '',
-                status: 'Em Serviço'
+                status: 'Em Serviço',
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            bancoOS.unshift(novaOS);
-            
             try {
-                localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
-            } catch(err) {
-                alert("Atenção: Espaço de memória cheio no navegador. As fotos puderam não ser salvas completamente.");
+                await db.collection("ordens_servico").add(novaOS);
+                
+                document.getElementById('form-os').reset();
+                document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
+                document.getElementById('msg-placa-encontrada').style.display = 'none';
+                fotosEntradaTemp = [];
+                renderizarPreviewsFotos();
+                
+                alert('Ordem de Serviço criada com sucesso no Firestore!');
+                trocarTela('tela-painel');
+            } catch (error) {
+                console.error("Erro ao salvar OS: ", error);
+                alert("Ocorreu um erro ao salvar a Ordem de Serviço no servidor.");
             }
-
-            document.getElementById('form-os').reset();
-            document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
-            document.getElementById('msg-placa-encontrada').style.display = 'none';
-            fotosEntradaTemp = [];
-            renderizarPreviewsFotos();
-            
-            alert('Ordem de Serviço criada com sucesso!');
-            trocarTela('tela-painel');
         }
 
         function renderizarPainel() {
@@ -815,50 +843,67 @@
             modalBaixa.show();
         }
 
-        function confirmarBaixaOS() {
+        async function confirmarBaixaOS() {
             if(!osSelecionadaId) return;
             const os = bancoOS.find(item => item.id === osSelecionadaId);
             const detalheServico = document.getElementById('servico-realizado-texto').value;
 
             if(os) {
-                os.status = 'Finalizada';
-                os.servicoRealizado = detalheServico || 'Serviço concluído';
-                localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
-                
-                alert(`Baixa efetuada com sucesso para a ${os.id}! Status alterado para Finalizada.`);
-                bootstrap.Modal.getInstance(document.getElementById('modalBaixa')).hide();
-                renderizarPainel();
+                try {
+                    await db.collection("ordens_servico").doc(os.docId).update({
+                        status: 'Finalizada',
+                        servicoRealizado: detalheServico || 'Serviço concluído'
+                    });
+
+                    alert(`Baixa efetuada com sucesso para a ${os.id}! Status alterado para Finalizada.`);
+                    bootstrap.Modal.getInstance(document.getElementById('modalBaixa')).hide();
+                } catch (error) {
+                    console.error("Erro ao atualizar OS: ", error);
+                    alert("Erro ao dar baixa na Ordem de Serviço.");
+                }
             }
         }
 
-        function excluirOSAtual() {
+        async function excluirOSAtual() {
             if(!osSelecionadaId) return;
             
             const senhaDigitada = prompt("Digite a senha de autorização para excluir a Ordem de Serviço:");
-            if (senhaDigitada === null) return; // Cancelou
+            if (senhaDigitada === null) return;
             
             if (senhaDigitada === SENHA_EXCLUSAO) {
-                bancoOS = bancoOS.filter(item => item.id !== osSelecionadaId);
-                localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
-                bootstrap.Modal.getInstance(document.getElementById('modalOS')).hide();
-                renderizarPainel();
-                alert("Ordem de Serviço excluída com sucesso.");
+                const os = bancoOS.find(item => item.id === osSelecionadaId);
+                if (os) {
+                    try {
+                        await db.collection("ordens_servico").doc(os.docId).delete();
+                        bootstrap.Modal.getInstance(document.getElementById('modalOS')).hide();
+                        alert("Ordem de Serviço excluída com sucesso.");
+                    } catch (error) {
+                        console.error("Erro ao excluir OS: ", error);
+                        alert("Erro ao excluir a Ordem de Serviço.");
+                    }
+                }
             } else {
                 alert("Senha incorreta! Exclusão não autorizada.");
             }
         }
 
-        function deletarOSDirect(id, e) {
+        async function deletarOSDirect(id, e) {
             e.stopPropagation();
 
             const senhaDigitada = prompt(`Digite a senha para excluir a ${id}:`);
-            if (senhaDigitada === null) return; // Cancelou
+            if (senhaDigitada === null) return;
 
             if (senhaDigitada === SENHA_EXCLUSAO) {
-                bancoOS = bancoOS.filter(item => item.id !== id);
-                localStorage.setItem('okm_ordens_servico', JSON.stringify(bancoOS));
-                renderizarPainel();
-                alert("Ordem de Serviço excluída com sucesso.");
+                const os = bancoOS.find(item => item.id === id);
+                if (os) {
+                    try {
+                        await db.collection("ordens_servico").doc(os.docId).delete();
+                        alert("Ordem de Serviço excluída com sucesso.");
+                    } catch (error) {
+                        console.error("Erro ao excluir OS: ", error);
+                        alert("Erro ao excluir a Ordem de Serviço.");
+                    }
+                }
             } else {
                 alert("Senha incorreta! Exclusão não autorizada.");
             }
@@ -867,8 +912,6 @@
         function imprimirOS() {
             window.print();
         }
-
-        renderizarPainel();
     </script>
 </body>
 </html>
