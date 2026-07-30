@@ -94,7 +94,6 @@
             margin-bottom: 2px;
         }
 
-        /* Estilos das Miniaturas de Fotos da Moto */
         .preview-foto-item {
             position: relative;
             width: 75px;
@@ -138,7 +137,6 @@
             transform: scale(1.03);
         }
 
-        /* ESTILOS EXCLUSIVOS PARA A IMPRESSÃO DA NOTA */
         @media print {
             body * {
                 visibility: hidden;
@@ -177,22 +175,54 @@
 
     <!-- Header Principal -->
     <nav class="navbar navbar-okm sticky-top no-print">
-        <div class="container-fluid justify-content-center">
-            <span class="navbar-brand mb-0 h1 text-white text-center">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <span class="navbar-brand mb-0 h1 text-white mx-auto">
                 <i class="fa-solid fa-motorcycle text-danger me-2"></i> OK.M Gestão de Oficinas
             </span>
+            <button id="btn-logout" class="btn btn-sm btn-outline-light border-0" onclick="fazerLogout()" style="display: none;" title="Sair">
+                <i class="fa-solid fa-right-from-bracket fs-5"></i>
+            </button>
         </div>
     </nav>
 
     <div class="container content-area mt-3">
 
         <!-- Logo Centralizado -->
-        <div class="text-center mb-3 no-print">
+        <div id="logo-header" class="text-center mb-3 no-print">
             <img src="logo.jpg.jpeg" alt="OK.M Moto Peças" class="logo-container img-fluid rounded-circle shadow-sm" onerror="this.onerror=null; this.src='https://placehold.co/120x120/121212/A81C1C?text=OK.M'">
         </div>
 
+        <!-- ==================== TELA DE LOGIN ==================== -->
+        <div id="tela-login" class="row justify-content-center mt-4">
+            <div class="col-12 col-md-5">
+                <div class="card card-custom p-4">
+                    <div class="card-header-okm p-3 text-center mb-3 rounded">
+                        <i class="fa-solid fa-lock me-2"></i> Acesso ao Sistema
+                    </div>
+                    <form onsubmit="autenticarUsuario(event)">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small"><i class="fa-solid fa-user text-danger me-1"></i> Usuário</label>
+                            <input type="text" id="login-usuario" class="form-control" placeholder="Digite seu usuário" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small"><i class="fa-solid fa-key text-danger me-1"></i> Senha</label>
+                            <input type="password" id="login-senha" class="form-control" placeholder="Digite sua senha" required>
+                        </div>
+                        <div id="msg-erro-login" class="alert alert-danger p-2 small text-center" style="display: none;">
+                            Usuário ou senha incorretos!
+                        </div>
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-vermelho py-2">
+                                <i class="fa-solid fa-right-to-bracket me-1"></i> Entrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== TELA 1: PAINEL / DASHBOARD ==================== -->
-        <div id="tela-painel">
+        <div id="tela-painel" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="fw-bold mb-0"><i class="fa-solid fa-chart-line text-danger me-2"></i>Painel Geral</h5>
                 <button class="btn btn-sm btn-vermelho" onclick="trocarTela('tela-nova-os')">
@@ -357,7 +387,6 @@
                                     <i class="fa-solid fa-plus fs-5"></i>
                                     <span style="font-size: 10px;" class="fw-bold mt-1">Tirar Foto</span>
                                 </button>
-                                <!-- Previews das fotos aparecerão aqui -->
                             </div>
                         </div>
 
@@ -422,7 +451,7 @@
     </div>
 
     <!-- Navegação Inferior -->
-    <div class="bottom-nav no-print">
+    <div id="bar-bottom-nav" class="bottom-nav no-print" style="display: none;">
         <button id="nav-painel" class="active" onclick="trocarTela('tela-painel')">
             <i class="fa-solid fa-chart-pie"></i>
             Painel
@@ -451,27 +480,63 @@
             appId: "1:123456789:web:abc123def456"
         };
 
-        // Inicializa o Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // CREDENCIAIS DE ACESSO
+        const USER_CORRETO = "LUCAS";
+        const SENHA_CORRETA = "4958";
         const SENHA_EXCLUSAO = "4958";
+
         let bancoOS = [];
         let osSelecionadaId = null;
         let fotosEntradaTemp = [];
 
         document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
 
+        /* --- LÓGICA DE LOGIN --- */
+        function autenticarUsuario(e) {
+            e.preventDefault();
+            const usuarioInput = document.getElementById('login-usuario').value.trim().toUpperCase();
+            const senhaInput = document.getElementById('login-senha').value.trim();
+            const msgErro = document.getElementById('msg-erro-login');
+
+            if (usuarioInput === USER_CORRETO && senhaInput === SENHA_CORRETA) {
+                msgErro.style.display = 'none';
+                document.getElementById('tela-login').style.display = 'none';
+                document.getElementById('btn-logout').style.display = 'block';
+                document.getElementById('bar-bottom-nav').style.display = 'flex';
+                
+                // Inicializar Firestore escuta
+                iniciarEscutaFirestore();
+                trocarTela('tela-painel');
+            } else {
+                msgErro.style.display = 'block';
+            }
+        }
+
+        function fazerLogout() {
+            document.getElementById('tela-login').style.display = 'flex';
+            document.getElementById('tela-painel').style.display = 'none';
+            document.getElementById('tela-nova-os').style.display = 'none';
+            document.getElementById('btn-logout').style.display = 'none';
+            document.getElementById('bar-bottom-nav').style.display = 'none';
+            document.getElementById('login-usuario').value = '';
+            document.getElementById('login-senha').value = '';
+        }
+
         // ESCUTA EM TEMPO REAL NO FIRESTORE
-        db.collection("ordens_servico").onSnapshot((snapshot) => {
-            bancoOS = [];
-            snapshot.forEach((doc) => {
-                bancoOS.push({ docId: doc.id, ...doc.data() });
+        function iniciarEscutaFirestore() {
+            db.collection("ordens_servico").onSnapshot((snapshot) => {
+                bancoOS = [];
+                snapshot.forEach((doc) => {
+                    bancoOS.push({ docId: doc.id, ...doc.data() });
+                });
+                renderizarPainel();
+            }, (error) => {
+                console.error("Erro ao carregar Ordens de Serviço do Firestore: ", error);
             });
-            renderizarPainel();
-        }, (error) => {
-            console.error("Erro ao carregar Ordens de Serviço do Firestore: ", error);
-        });
+        }
 
         function trocarTela(tela) {
             document.getElementById('tela-painel').style.display = tela === 'tela-painel' ? 'block' : 'none';
@@ -810,7 +875,6 @@
                     </div>
                 ` : ''}
 
-                <!-- ÁREA DE ASSINATURA EXCLUSIVA DA IMPRESSÃO -->
                 <div class="assinatura-area mt-5 pt-3">
                     <div class="row text-center">
                         <div class="col-6">
