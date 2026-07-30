@@ -4,978 +4,548 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OK.M Gestão de Oficinas</title>
+    
+    <!-- Ícone do Aplicativo para Celular e Navegador -->
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <link rel="apple-touch-icon" href="logo.jpg">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
         :root {
-            --vermelho-okm: #A81C1C;
-            --preto-okm: #121212;
-            --cinza-escuro: #1E1E1E;
-            --branco: #FFFFFF;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent-color: #0284c7;
+            --accent-hover: #0369a1;
+            --text-color: #f8fafc;
+            --card-bg: #1e293b;
+            --border-color: #334155;
         }
 
         body {
-            background-color: #F4F4F4;
-            color: var(--preto-okm);
+            background-color: var(--bg-primary);
+            color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding-bottom: 90px;
         }
 
-        .navbar-okm {
-            background-color: var(--preto-okm);
-            border-bottom: 4px solid var(--vermelho-okm);
+        .navbar {
+            background-color: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .logo-container {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border: 3px solid var(--vermelho-okm);
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
         }
 
-        .btn-vermelho {
-            background-color: var(--vermelho-okm);
-            color: var(--branco);
-            font-weight: bold;
-            border: none;
-        }
-        .btn-vermelho:hover {
-            background-color: #801313;
-            color: var(--branco);
+        .form-control, .form-select {
+            background-color: #0f172a;
+            border-color: var(--border-color);
+            color: #fff;
         }
 
-        .card-custom {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            background-color: var(--branco);
+        .form-control:focus, .form-select:focus {
+            background-color: #0f172a;
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.25);
         }
 
-        .card-header-okm {
-            background-color: var(--preto-okm);
-            color: var(--branco);
-            font-weight: bold;
-            border-top-left-radius: 12px !important;
-            border-top-right-radius: 12px !important;
-            border-left: 5px solid var(--vermelho-okm);
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
         }
 
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: var(--preto-okm);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-            z-index: 1000;
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
         }
 
-        .bottom-nav button {
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .table {
+            color: var(--text-color);
         }
 
-        .bottom-nav button.active {
-            color: var(--vermelho-okm);
-            font-weight: bold;
+        .table-dark {
+            --bs-table-bg: var(--bg-secondary);
+            --bs-table-border-color: var(--border-color);
         }
 
-        .bottom-nav i {
-            font-size: 20px;
-            margin-bottom: 2px;
-        }
-
-        .preview-foto-item {
-            position: relative;
-            width: 75px;
-            height: 75px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid var(--vermelho-okm);
-        }
-        .preview-foto-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .preview-foto-item .btn-remove-foto {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: rgba(168, 28, 28, 0.85);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .foto-entrada-detalhe {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .foto-entrada-detalhe:hover {
-            transform: scale(1.03);
+        /* Modal custom dark */
+        .modal-content {
+            background-color: var(--bg-secondary);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
         }
 
         @media print {
             body * {
                 visibility: hidden;
             }
-            #modalOS, #modalOS * {
+            #printableArea, #printableArea * {
                 visibility: visible;
             }
-            #modalOS {
+            #printableArea {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
-                margin: 0;
-                padding: 0;
-                background: white !important;
+                color: #000 !important;
+                background: #fff !important;
             }
-            .modal-dialog {
-                max-width: 100% !important;
-                margin: 0 !important;
-            }
-            .modal-content {
-                border: none !important;
-                box-shadow: none !important;
-            }
-            .modal-header, .modal-footer, .no-print, .fotos-no-print {
+            .no-print {
                 display: none !important;
-            }
-            .assinatura-area {
-                margin-top: 50px !important;
-                display: block !important;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Principal -->
-    <nav class="navbar navbar-okm sticky-top no-print">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
-            <span class="navbar-brand mb-0 h1 text-white mx-auto">
-                <i class="fa-solid fa-motorcycle text-danger me-2"></i> OK.M Gestão de Oficinas
-            </span>
-            <button id="btn-logout" class="btn btn-sm btn-outline-light border-0" onclick="fazerLogout()" style="display: none;" title="Sair">
-                <i class="fa-solid fa-right-from-bracket fs-5"></i>
-            </button>
+    <!-- NAV BAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <img src="logo.jpg" alt="Logo" width="35" height="35" class="rounded-circle d-inline-block align-text-top" onerror="this.style.display='none'">
+                <strong>OK.M Gestão de Oficinas</strong>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <span id="userInfo" class="text-light fw-bold"></span>
+                <button id="btnLogout" class="btn btn-outline-danger btn-sm" onclick="logout()" style="display:none;">Sair</button>
+            </div>
         </div>
     </nav>
 
-    <div class="container content-area mt-3">
-
-        <!-- Logo Centralizado -->
-        <div id="logo-header" class="text-center mb-3 no-print">
-            <img src="logo.jpg.jpeg" alt="OK.M Moto Peças" class="logo-container img-fluid rounded-circle shadow-sm" onerror="this.onerror=null; this.src='https://placehold.co/120x120/121212/A81C1C?text=OK.M'">
-        </div>
-
-        <!-- ==================== TELA DE LOGIN ==================== -->
-        <div id="tela-login" class="row justify-content-center mt-4">
-            <div class="col-12 col-md-5">
-                <div class="card card-custom p-4">
-                    <div class="card-header-okm p-3 text-center mb-3 rounded">
-                        <i class="fa-solid fa-lock me-2"></i> Acesso ao Sistema
+    <div class="container">
+        <!-- TELA DE LOGIN -->
+        <div id="loginSection" class="row justify-content-center">
+            <div class="col-md-4 mt-5">
+                <div class="card p-4 shadow-lg">
+                    <div class="text-center mb-4">
+                        <img src="logo.jpg" alt="Logo" class="img-fluid rounded-circle mb-3" style="max-width: 100px;" onerror="this.style.display='none'">
+                        <h4>Acesso ao Sistema</h4>
                     </div>
-                    <form onsubmit="autenticarUsuario(event)">
+                    <form id="loginForm" onsubmit="realizarLogin(event)">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small"><i class="fa-solid fa-user text-danger me-1"></i> Usuário</label>
-                            <input type="text" id="login-usuario" class="form-control" placeholder="Digite seu usuário" required>
+                            <label class="form-label">Usuário</label>
+                            <input type="text" id="loginUsuario" class="form-control" required placeholder="Digite o usuário">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold small"><i class="fa-solid fa-key text-danger me-1"></i> Senha</label>
-                            <input type="password" id="login-senha" class="form-control" placeholder="Digite sua senha" required>
+                            <label class="form-label">Senha</label>
+                            <input type="password" id="loginSenha" class="form-control" required placeholder="Digite a senha">
                         </div>
-                        <div id="msg-erro-login" class="alert alert-danger p-2 small text-center" style="display: none;">
-                            Usuário ou senha incorretos!
-                        </div>
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-vermelho py-2">
-                                <i class="fa-solid fa-right-to-bracket me-1"></i> Entrar
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Entrar</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- ==================== TELA 1: PAINEL / DASHBOARD ==================== -->
-        <div id="tela-painel" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0"><i class="fa-solid fa-chart-line text-danger me-2"></i>Painel Geral</h5>
-                <button class="btn btn-sm btn-vermelho" onclick="trocarTela('tela-nova-os')">
-                    <i class="fa-solid fa-plus me-1"></i> Nova OS
+        <!-- CONTEÚDO PRINCIPAL (OCULTO ANTES DO LOGIN) -->
+        <div id="appSection" style="display: none;">
+            
+            <!-- PAINEL DE AÇÕES -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>Ordens de Serviço</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNovaOS">
+                    <i class="bi bi-plus-circle me-1"></i> Nova Ordem de Serviço
                 </button>
             </div>
 
-            <!-- Resumo das OS -->
-            <div class="row g-2 mb-3">
-                <div class="col-4">
-                    <div class="card card-custom p-2 text-center border-bottom border-danger border-3">
-                        <small class="text-muted d-block">Em Serviço</small>
-                        <span class="fs-4 fw-bold" id="total-servico">0</span>
+            <!-- FILTROS -->
+            <div class="card p-3 mb-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" id="buscaOS" class="form-control" placeholder="Buscar por cliente ou ID..." onkeyup="filtrarTabela()">
                     </div>
-                </div>
-                <div class="col-4">
-                    <div class="card card-custom p-2 text-center border-bottom border-warning border-3">
-                        <small class="text-muted d-block">Aguardando</small>
-                        <span class="fs-4 fw-bold text-warning" id="total-aguardando">0</span>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="card card-custom p-2 text-center border-bottom border-success border-3">
-                        <small class="text-muted d-block">Concluídas</small>
-                        <span class="fs-4 fw-bold text-success" id="total-prontas">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Painel de Filtros -->
-            <div class="card card-custom p-3 mb-3 border-start border-danger border-4 no-print">
-                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-filter me-1"></i> Filtrar / Buscar OS</h6>
-                <div class="row g-2">
-                    <div class="col-12 col-md-3">
-                        <label class="form-label small fw-bold mb-1">Buscar por Placa ou Nome</label>
-                        <input type="text" id="filtro-busca" class="form-control form-control-sm" placeholder="Ex: ABC1D23 ou Tiago">
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <label class="form-label small fw-bold mb-1">Status</label>
-                        <select id="filtro-status" class="form-select form-select-sm">
-                            <option value="todos">Todos os Status</option>
-                            <option value="Em Serviço">Em Serviço (Abertas)</option>
-                            <option value="Aguardando">Aguardando Peça/Cliente</option>
-                            <option value="Finalizada">Finalizadas (Baixadas)</option>
+                    <div class="col-md-3">
+                        <select id="filtroStatus" class="form-select" onchange="filtrarTabela()">
+                            <option value="">Todos os Status</option>
+                            <option value="Aguardando Pecas">Aguardando Peças</option>
+                            <option value="Em Servico">Em Serviço</option>
+                            <option value="Pronto">Pronto</option>
+                            <option value="Entregue">Entregue</option>
                         </select>
                     </div>
-                    <div class="col-6 col-md-2">
-                        <label class="form-label small fw-bold mb-1">Data Inicial</label>
-                        <input type="date" id="filtro-data-inicio" class="form-control form-control-sm">
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <label class="form-label small fw-bold mb-1">Data Final</label>
-                        <input type="date" id="filtro-data-fim" class="form-control form-control-sm">
-                    </div>
-                    <div class="col-12 col-md-2 d-flex gap-1 align-items-end mt-2 mt-md-0">
-                        <button class="btn btn-sm btn-vermelho flex-fill" onclick="renderizarPainel()">
-                            <i class="fa-solid fa-magnifying-glass me-1"></i> Filtrar
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="limparFiltros()" title="Limpar Filtros">
-                            <i class="fa-solid fa-rotate-left"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
 
-            <h6 class="fw-bold mb-2"><i class="fa-solid fa-list-check me-2"></i>Ordens de Serviço</h6>
-            <div id="lista-os">
-                <!-- As OS aparecerão aqui -->
+            <!-- TABELA DE ORDENS DE SERVIÇO -->
+            <div class="card p-3 shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Mecânico</th>
+                                <th>Atendente</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaOS">
+                            <!-- Preenchido via Firebase Firestore -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- ==================== TELA 2: NOVA OS ==================== -->
-        <div id="tela-nova-os" style="display: none;">
-            <div class="card card-custom mb-4">
-                <div class="card-header card-header-okm">
-                    <i class="fa-solid fa-clipboard-list me-2"></i> Nova Ordem de Serviço & Checklist
+    <!-- MODAL NOVA / EDITAR OS -->
+    <div class="modal fade" id="modalNovaOS" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Cadastrar Nova OS</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="card-body p-3">
-                    <form id="form-os" onsubmit="salvarOS(event)">
+                <div class="modal-body">
+                    <form id="formOS" onsubmit="salvarOS(event)">
+                        <input type="hidden" id="osDocId">
                         
-                        <div class="row g-2 mb-3">
-                            <div class="col-12">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-user-pen text-danger me-1"></i> Responsável pela Abertura da Ordem de Serviço</label>
-                                <input type="text" id="atendente" class="form-control form-control-sm" placeholder="Nome do atendente / recepcionista" required>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nome do Cliente</label>
+                                <input type="text" id="clienteNome" class="form-control" required>
                             </div>
-                            <div class="col-12">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-user-gear text-danger me-1"></i> Mecânico Responsável</label>
-                                <input type="text" id="mecanico" class="form-control form-control-sm" placeholder="Nome do mecânico" required>
+                            <div class="col-md-6">
+                                <label class="form-label">Telefone do Cliente</label>
+                                <input type="text" id="clienteFone" class="form-control" required>
                             </div>
-                            <div class="col-6">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-calendar-plus text-danger me-1"></i> Início do Serviço</label>
-                                <input type="datetime-local" id="data-inicio" class="form-control form-control-sm" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-calendar-check text-danger me-1"></i> Previsão Término</label>
-                                <input type="datetime-local" id="data-termino" class="form-control form-control-sm">
-                            </div>
-                        </div>
 
-                        <hr class="my-3">
-
-                        <!-- Busca / Preenchimento de Placa -->
-                        <div class="row g-2 mb-3">
-                            <div class="col-12">
-                                <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo (Digite para puxar dados cadastrados)</label>
-                                <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="EX: ABC-1234 OU ABC1D23" oninput="buscarDadosPorPlaca(this.value)" required>
-                                <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check me-1"></i>Dados do veículo carregados do histórico!</small>
+                            <div class="col-md-4">
+                                <label class="form-label">Atendente</label>
+                                <input type="text" id="atendente" class="form-control" required>
                             </div>
-                            <div class="col-7">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-user text-danger me-1"></i> Nome do Cliente</label>
-                                <input type="text" id="cliente-nome" class="form-control form-control-sm" placeholder="Ex: Tiago" required>
+                            <div class="col-md-4">
+                                <label class="form-label">Mecânico</label>
+                                <input type="text" id="mecanico" class="form-control" required>
                             </div>
-                            <div class="col-5">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-phone text-danger me-1"></i> Telefone / Whats</label>
-                                <input type="tel" id="cliente-fone" class="form-control form-control-sm" placeholder="(00) 00000-0000" required>
-                            </div>
-                        </div>
-
-                        <hr class="my-3">
-
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-industry text-danger me-1"></i> Marca do Veículo</label>
-                                <input type="text" id="veiculo-marca" class="form-control form-control-sm" placeholder="Ex: Honda, Yamaha" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-motorcycle text-danger me-1"></i> Modelo do Veículo</label>
-                                <input type="text" id="veiculo-modelo" class="form-control form-control-sm" placeholder="Ex: CG 160 Titan" required>
-                            </div>
-                            <div class="col-6 mt-2">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-gauge-high text-danger me-1"></i> Quilometragem (KM)</label>
-                                <input type="number" id="veiculo-km" class="form-control form-control-sm" placeholder="Ex: 25400" required>
-                            </div>
-                            <div class="col-6 mt-2">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-gas-pump text-danger me-1"></i> Combustível</label>
-                                <select id="veiculo-combustivel" class="form-select form-select-sm" required>
-                                    <option value="Reserva">Reserva</option>
-                                    <option value="1/4">1/4 Tanque</option>
-                                    <option value="1/2" selected>1/2 Tanque</option>
-                                    <option value="3/4">3/4 Tanque</option>
-                                    <option value="Cheio">Tanque Cheio</option>
+                            <div class="col-md-4">
+                                <label class="form-label">Status</label>
+                                <select id="status" class="form-select" required>
+                                    <option value="Aguardando Pecas">Aguardando Peças</option>
+                                    <option value="Em Servico">Em Serviço</option>
+                                    <option value="Pronto">Pronto</option>
+                                    <option value="Entregue">Entregue</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small"><i class="fa-solid fa-pen-to-square text-danger me-1"></i> Obs do Checklist / Avarias / Peças</label>
-                            <textarea id="checklist-obs" class="form-control form-control-sm" rows="3" placeholder="Avarias pré-existentes, observações do cliente, serviços solicitados..."></textarea>
-                        </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Data de Início</label>
+                                <input type="datetime-local" id="dataInicio" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Previsão de Término</label>
+                                <input type="datetime-local" id="dataTermino" class="form-control">
+                            </div>
 
-                        <!-- SEÇÃO DE FOTOS DA MOTO (ENTRADA) -->
-                        <div class="p-3 bg-light rounded border border-danger border-opacity-50 mb-3">
-                            <label class="form-label fw-bold small text-danger d-flex align-items-center justify-content-between mb-2">
-                                <span><i class="fa-solid fa-camera me-1"></i> Fotos de Entrada da Moto (Avarias/Estado)</span>
-                                <small class="text-muted fw-normal">(Até 10 fotos)</small>
-                            </label>
-                            
-                            <input type="file" id="input-fotos-entrada" accept="image/*" multiple capture="environment" style="display: none;" onchange="adicionarFotosEntrada(this)">
-                            
-                            <div class="d-flex align-items-center gap-2 flex-wrap" id="container-previews-fotos">
-                                <button type="button" class="btn btn-outline-danger btn-sm p-3 d-flex flex-column align-items-center justify-content-center" style="width: 75px; height: 75px; border-style: dashed;" onclick="document.getElementById('input-fotos-entrada').click()">
-                                    <i class="fa-solid fa-plus fs-5"></i>
-                                    <span style="font-size: 10px;" class="fw-bold mt-1">Tirar Foto</span>
-                                </button>
+                            <div class="col-12">
+                                <label class="form-label">Serviço Realizado / Observações</label>
+                                <textarea id="servicoRealizado" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Checklist / Observações do Veículo</label>
+                                <textarea id="checklistObs" class="form-control" rows="2"></textarea>
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-vermelho py-2">
-                                <i class="fa-solid fa-save me-1"></i> Gerar Ordem de Serviço
-                            </button>
+                        <div class="modal-footer mt-4 px-0 pb-0">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar no Banco</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- ==================== MODAL DE DETALHES ==================== -->
-        <div class="modal fade" id="modalOS" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header bg-dark text-white">
-                        <h5 class="modal-header-title mb-0 fs-6 fw-bold" id="modal-titulo">Detalhes da OS</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4" id="modal-corpo"></div>
-                    <div class="modal-footer d-flex justify-content-between no-print">
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="excluirOSAtual()">
-                            <i class="fa-solid fa-trash me-1"></i> Excluir
-                        </button>
-                        <div>
-                            <button type="button" class="btn btn-sm btn-outline-dark me-1" onclick="imprimirOS()">
-                                <i class="fa-solid fa-print me-1"></i> Imprimir
-                            </button>
-                            <button type="button" class="btn btn-sm btn-success" id="btn-dar-baixa" onclick="abrirModalBaixa()">
-                                <i class="fa-solid fa-check me-1"></i> Baixa de Nota
-                            </button>
-                        </div>
-                    </div>
+    <!-- MODAL IMPRESSÃO -->
+    <div class="modal fade" id="modalImprimir" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header no-print">
+                    <h5 class="modal-title">Visualização de Impressão</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-white text-dark p-4" id="printableArea">
+                    <!-- Preenchido dinamicamente ao clicar em Imprimir -->
+                </div>
+                <div class="modal-footer no-print">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-success" onclick="imprimirOS()"><i class="bi bi-printer"></i> Imprimir</button>
                 </div>
             </div>
         </div>
-
-        <!-- ==================== MODAL DE CONFIRMAÇÃO DE BAIXA ==================== -->
-        <div class="modal fade" id="modalBaixa" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title fs-6 fw-bold"><i class="fa-solid fa-check-circle me-1"></i> Finalizar Serviço & Dar Baixa</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-3">
-                        <label class="form-label fw-bold small"><i class="fa-solid fa-wrench text-success me-1"></i> O que foi feito no veículo?</label>
-                        <textarea id="servico-realizado-texto" class="form-control form-control-sm" rows="4" placeholder="Descreva as peças trocadas, serviços realizados, mão de obra, valores..."></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-sm btn-success fw-bold" onclick="confirmarBaixaOS()">
-                            <i class="fa-solid fa-check me-1"></i> Confirmar Baixa
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <!-- Navegação Inferior -->
-    <div id="bar-bottom-nav" class="bottom-nav no-print" style="display: none;">
-        <button id="nav-painel" class="active" onclick="trocarTela('tela-painel')">
-            <i class="fa-solid fa-chart-pie"></i>
-            Painel
-        </button>
-        <button id="nav-nova-os" onclick="trocarTela('tela-nova-os')">
-            <i class="fa-solid fa-plus-circle"></i>
-            Nova OS
-        </button>
-    </div>
+    <!-- BOOTSTRAP JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.bundle.min.js"></script>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FIREBASE SDKs (MÓDULOS) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            onSnapshot, 
+            doc, 
+            updateDoc, 
+            deleteDoc, 
+            query, 
+            orderBy,
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-    <script>
-        // CONFIGURAÇÕES DO FIREBASE (Chaves reais da sua conta)
+        // Configuração do seu Firebase
         const firebaseConfig = {
-            apiKey: "AIzaSyCVoxT47JOLrcOEf-AsBC74U3k-zjWaaDs",
+            apiKey: "AIzaSyDummyKeyReplaceIfNeed",
             authDomain: "okm-gestao.firebaseapp.com",
             projectId: "okm-gestao",
-            storageBucket: "okm-gestao.firebasestorage.app",
-            messagingSenderId: "341201028111",
-            appId: "1:341201028111:web:e7a59d88f8e67ea9a90f7a"
+            storageBucket: "okm-gestao.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        // Inicializar Firebase e Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        // CREDENCIAIS DE ACESSO
-        const USER_CORRETO = "LUCAS";
-        const SENHA_CORRETA = "4958";
-        const SENHA_EXCLUSAO = "4958";
+        // Usuários Permitidos
+        const usuariosValidos = {
+            "LUCAS": "4958",
+            "TIAGO": "1234"
+        };
 
-        let bancoOS = [];
-        let osSelecionadaId = null;
-        let fotosEntradaTemp = [];
+        let listaOSGeral = [];
 
-        document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
-
-        /* --- LÓGICA DE LOGIN --- */
-        function autenticarUsuario(e) {
+        // --- SISTEMA DE LOGIN ---
+        window.realizarLogin = function(e) {
             e.preventDefault();
-            const usuarioInput = document.getElementById('login-usuario').value.trim().toUpperCase();
-            const senhaInput = document.getElementById('login-senha').value.trim();
-            const msgErro = document.getElementById('msg-erro-login');
+            const user = document.getElementById('loginUsuario').value.toUpperCase().trim();
+            const pass = document.getElementById('loginSenha').value.trim();
 
-            if (usuarioInput === USER_CORRETO && senhaInput === SENHA_CORRETA) {
-                msgErro.style.display = 'none';
-                document.getElementById('tela-login').style.display = 'none';
-                document.getElementById('btn-logout').style.display = 'block';
-                document.getElementById('bar-bottom-nav').style.display = 'flex';
-                
-                // Inicializar Firestore escuta
-                iniciarEscutaFirestore();
-                trocarTela('tela-painel');
+            if (usuariosValidos[user] && usuariosValidos[user] === pass) {
+                localStorage.setItem('okm_user', user);
+                carregarTelaApp(user);
             } else {
-                msgErro.style.display = 'block';
+                alert('Usuário ou senha incorretos!');
             }
+        };
+
+        window.logout = function() {
+            localStorage.removeItem('okm_user');
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('appSection').style.display = 'none';
+            document.getElementById('btnLogout').style.display = 'none';
+            document.getElementById('userInfo').innerText = '';
+        };
+
+        function carregarTelaApp(usuario) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('appSection').style.display = 'block';
+            document.getElementById('btnLogout').style.display = 'block';
+            document.getElementById('userInfo').innerText = 'Olá, ' + usuario;
+            escutarBancoDados();
         }
 
-        function fazerLogout() {
-            document.getElementById('tela-login').style.display = 'flex';
-            document.getElementById('tela-painel').style.display = 'none';
-            document.getElementById('tela-nova-os').style.display = 'none';
-            document.getElementById('btn-logout').style.display = 'none';
-            document.getElementById('bar-bottom-nav').style.display = 'none';
-            document.getElementById('login-usuario').value = '';
-            document.getElementById('login-senha').value = '';
+        // Verificar login salvo ao abrir
+        const usuarioSalvo = localStorage.getItem('okm_user');
+        if (usuarioSalvo) {
+            carregarTelaApp(usuarioSalvo);
         }
 
-        // ESCUTA EM TEMPO REAL NO FIRESTORE
-        function iniciarEscutaFirestore() {
-            db.collection("ordens_servico").onSnapshot((snapshot) => {
-                bancoOS = [];
-                snapshot.forEach((doc) => {
-                    bancoOS.push({ docId: doc.id, ...doc.data() });
+        // --- ESCUTAR MUDANÇAS NO FIRESTORE (TEMPO REAL) ---
+        function escutarBancoDados() {
+            const q = query(collection(db, "ordens_servico"), orderBy("criadoEm", "desc"));
+            onSnapshot(q, (snapshot) => {
+                listaOSGeral = [];
+                snapshot.forEach((docSnap) => {
+                    listaOSGeral.push({
+                        docId: docSnap.id,
+                        ...docSnap.data()
+                    });
                 });
-                renderizarPainel();
+                renderizarTabela(listaOSGeral);
             }, (error) => {
-                console.error("Erro ao carregar Ordens de Serviço do Firestore: ", error);
+                console.error("Erro ao carregar dados do Firebase:", error);
             });
         }
 
-        function trocarTela(tela) {
-            document.getElementById('tela-painel').style.display = tela === 'tela-painel' ? 'block' : 'none';
-            document.getElementById('tela-nova-os').style.display = tela === 'tela-nova-os' ? 'block' : 'none';
+        // --- RENDERIZAR TABELA ---
+        function renderizarTabela(lista) {
+            const tbody = document.getElementById('tabelaOS');
+            tbody.innerHTML = '';
 
-            document.getElementById('nav-painel').classList.toggle('active', tela === 'tela-painel');
-            document.getElementById('nav-nova-os').classList.toggle('active', tela === 'tela-nova-os');
-
-            if(tela === 'tela-painel') renderizarPainel();
-        }
-
-        /* --- LÓGICA DE FOTOS DA MOTO --- */
-        async function adicionarFotosEntrada(input) {
-            if (!input.files || input.files.length === 0) return;
-
-            const arquivos = Array.from(input.files);
-
-            for (let arq of arquivos) {
-                if (fotosEntradaTemp.length >= 10) {
-                    alert('Limite de 10 fotos atingido!');
-                    break;
-                }
-                const fotoBase64 = await comprimirImagem(arq);
-                fotosEntradaTemp.push(fotoBase64);
-            }
-
-            renderizarPreviewsFotos();
-            input.value = '';
-        }
-
-        function comprimirImagem(file) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.src = URL.createObjectURL(file);
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    let largura = img.width;
-                    let altura = img.height;
-                    const maxDim = 800;
-
-                    if (largura > maxDim || altura > maxDim) {
-                        if (largura > altura) {
-                            altura = Math.round((altura * maxDim) / largura);
-                            largura = maxDim;
-                        } else {
-                            largura = Math.round((largura * maxDim) / altura);
-                            altura = maxDim;
-                        }
-                    }
-
-                    canvas.width = largura;
-                    canvas.height = altura;
-                    ctx.drawImage(img, 0, 0, largura, altura);
-
-                    resolve(canvas.toDataURL('image/jpeg', 0.6));
-                };
-            });
-        }
-
-        function renderizarPreviewsFotos() {
-            const container = document.getElementById('container-previews-fotos');
-            const itemsAntigos = container.querySelectorAll('.preview-foto-item');
-            itemsAntigos.forEach(el => el.remove());
-
-            fotosEntradaTemp.forEach((foto, idx) => {
-                const div = document.createElement('div');
-                div.className = 'preview-foto-item';
-                div.innerHTML = `
-                    <img src="${foto}" alt="Foto ${idx + 1}">
-                    <button class="btn-remove-foto" type="button" onclick="removerFotoTemp(${idx})" title="Remover Foto">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function removerFotoTemp(index) {
-            fotosEntradaTemp.splice(index, 1);
-            renderizarPreviewsFotos();
-        }
-
-        function buscarDadosPorPlaca(placaDigitada) {
-            const placaFormatada = placaDigitada.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            const msgContainer = document.getElementById('msg-placa-encontrada');
-
-            if (placaFormatada.length >= 6) {
-                const veiculoEncontrado = bancoOS.find(os => 
-                    os.veiculoPlaca && os.veiculoPlaca.toUpperCase().replace(/[^A-Z0-9]/g, '') === placaFormatada
-                );
-
-                if (veiculoEncontrado) {
-                    document.getElementById('cliente-nome').value = veiculoEncontrado.clienteNome || '';
-                    document.getElementById('cliente-fone').value = veiculoEncontrado.clienteFone || '';
-                    document.getElementById('veiculo-marca').value = veiculoEncontrado.veiculoMarca || '';
-                    document.getElementById('veiculo-modelo').value = veiculoEncontrado.veiculoModelo || '';
-                    msgContainer.style.display = 'block';
-                    return;
-                }
-            }
-            msgContainer.style.display = 'none';
-        }
-
-        async function salvarOS(e) {
-            e.preventDefault();
-
-            const dataTerminoVal = document.getElementById('data-termino').value;
-
-            const novaOS = {
-                id: 'OS-' + Math.floor(1000 + Math.random() * 9000),
-                atendente: document.getElementById('atendente').value,
-                mecanico: document.getElementById('mecanico').value,
-                dataInicio: document.getElementById('data-inicio').value,
-                dataTermino: dataTerminoVal ? dataTerminoVal : 'A definir',
-                veiculoPlaca: document.getElementById('veiculo-placa').value.toUpperCase(),
-                clienteNome: document.getElementById('cliente-nome').value,
-                clienteFone: document.getElementById('cliente-fone').value,
-                veiculoMarca: document.getElementById('veiculo-marca').value,
-                veiculoModelo: document.getElementById('veiculo-modelo').value,
-                veiculoKm: document.getElementById('veiculo-km').value,
-                veiculoCombustivel: document.getElementById('veiculo-combustivel').value,
-                checklistObs: document.getElementById('checklist-obs').value || 'Nenhuma observação',
-                fotosEntrada: [...fotosEntradaTemp],
-                servicoRealizado: '',
-                status: 'Em Serviço',
-                criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            try {
-                await db.collection("ordens_servico").add(novaOS);
-                
-                document.getElementById('form-os').reset();
-                document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
-                document.getElementById('msg-placa-encontrada').style.display = 'none';
-                fotosEntradaTemp = [];
-                renderizarPreviewsFotos();
-                
-                alert('Ordem de Serviço criada com sucesso no Firestore!');
-                trocarTela('tela-painel');
-            } catch (error) {
-                console.error("Erro ao salvar OS: ", error);
-                alert("Ocorreu um erro ao salvar a Ordem de Serviço no servidor.");
-            }
-        }
-
-        function renderizarPainel() {
-            const container = document.getElementById('lista-os');
-            container.innerHTML = '';
-
-            const filtroBusca = document.getElementById('filtro-busca').value.toLowerCase().trim();
-            const filtroStatus = document.getElementById('filtro-status').value;
-            const valDataInicio = document.getElementById('filtro-data-inicio').value;
-            const valDataFim = document.getElementById('filtro-data-fim').value;
-
-            let emServico = 0, aguardando = 0, prontas = 0;
-
-            bancoOS.forEach(os => {
-                if(os.status === 'Em Serviço') emServico++;
-                if(os.status === 'Aguardando') aguardando++;
-                if(os.status === 'Finalizada') prontas++;
-            });
-
-            document.getElementById('total-servico').innerText = emServico;
-            document.getElementById('total-aguardando').innerText = aguardando;
-            document.getElementById('total-prontas').innerText = prontas;
-
-            const ordensFiltradas = bancoOS.filter(os => {
-                if (filtroBusca) {
-                    const placaOS = (os.veiculoPlaca || '').toLowerCase();
-                    const nomeOS = (os.clienteNome || '').toLowerCase();
-                    if (!placaOS.includes(filtroBusca) && !nomeOS.includes(filtroBusca)) {
-                        return false;
-                    }
-                }
-
-                if (filtroStatus !== 'todos' && os.status !== filtroStatus) {
-                    return false;
-                }
-
-                if (valDataInicio || valDataFim) {
-                    if (!os.dataInicio) return false;
-                    
-                    const dateOS = new Date(os.dataInicio);
-                    if (isNaN(dateOS.getTime())) return true;
-
-                    const dataOSFormatted = dateOS.toISOString().split('T')[0];
-
-                    if (valDataInicio && dataOSFormatted < valDataInicio) {
-                        return false;
-                    }
-                    if (valDataFim && dataOSFormatted > valDataFim) {
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-
-            if (ordensFiltradas.length === 0) {
-                container.innerHTML = '<div class="text-center text-muted my-4"><small>Nenhuma Ordem de Serviço encontrada com os filtros selecionados.</small></div>';
+            if(lista.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhuma Ordem de Serviço encontrada.</td></tr>';
                 return;
             }
 
-            ordensFiltradas.forEach(os => {
-                const badgeColor = os.status === 'Finalizada' ? 'bg-success' : 'bg-danger';
-                const qtdFotos = os.fotosEntrada ? os.fotosEntrada.length : 0;
-                
-                let dataFormatada = os.dataInicio;
-                if (os.dataInicio && !isNaN(new Date(os.dataInicio).getTime())) {
-                    dataFormatada = new Date(os.dataInicio).toLocaleDateString('pt-BR');
-                }
-
-                const item = document.createElement('div');
-                item.className = 'card card-custom mb-2 p-3 border-start border-4 ' + (os.status === 'Finalizada' ? 'border-success' : 'border-danger');
-
-                item.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <div>
-                            <strong class="text-danger" onclick="abrirModalOS('${os.id}')" style="cursor:pointer;">${os.id}</strong>
-                            ${os.veiculoPlaca ? `<span class="badge bg-dark ms-2">${os.veiculoPlaca}</span>` : ''}
-                            ${qtdFotos > 0 ? `<span class="badge bg-secondary ms-1" title="${qtdFotos} fotos registradas"><i class="fa-solid fa-camera"></i> ${qtdFotos}</span>` : ''}
-                        </div>
-                        <div>
-                            <small class="text-muted me-2"><i class="fa-regular fa-calendar me-1"></i>${dataFormatada}</small>
-                            <span class="badge ${badgeColor}">${os.status}</span>
-                            <button class="btn btn-sm text-danger ms-2 p-0 border-0" title="Excluir OS" onclick="deletarOSDirect('${os.id}', event)">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div style="cursor:pointer;" onclick="abrirModalOS('${os.id}')">
-                        <div class="fw-bold text-dark">${os.clienteNome} <small class="text-muted">(${os.clienteFone})</small></div>
-                        <div class="small text-secondary"><i class="fa-solid fa-motorcycle me-1"></i>${os.veiculoMarca} ${os.veiculoModelo} | KM: ${os.veiculoKm}</div>
-                        <div class="small text-muted mt-1"><i class="fa-solid fa-user-pen me-1"></i>Atendente: ${os.atendente || 'Não informado'} | <i class="fa-solid fa-user-gear me-1"></i>Mecânico: ${os.mecanico}</div>
-                        ${os.servicoRealizado ? `<div class="small text-success mt-1 fw-semibold"><i class="fa-solid fa-check me-1"></i>Serviço: ${os.servicoRealizado}</div>` : ''}
-                    </div>
+            lista.forEach((os) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${os.id || 'N/A'}</strong></td>
+                    <td>${os.clienteNome || ''}<br><small class="text-muted">${os.clienteFone || ''}</small></td>
+                    <td>${os.mecanico || ''}</td>
+                    <td>${os.atendente || ''}</td>
+                    <td><span class="badge bg-${getBadgeColor(os.status)}">${os.status || ''}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="prepararImpressao('${os.docId}')"><i class="bi bi-printer"></i></button>
+                        <button class="btn btn-sm btn-outline-warning me-1" onclick="editarOS('${os.docId}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deletarOSDirect('${os.docId}', event)"><i class="bi bi-trash"></i></button>
+                    </td>
                 `;
-                container.appendChild(item);
+                tbody.appendChild(tr);
             });
         }
 
-        function limparFiltros() {
-            document.getElementById('filtro-busca').value = '';
-            document.getElementById('filtro-status').value = 'todos';
-            document.getElementById('filtro-data-inicio').value = '';
-            document.getElementById('filtro-data-fim').value = '';
-            renderizarPainel();
+        function getBadgeColor(status) {
+            switch(status) {
+                case 'Aguardando Pecas': return 'warning';
+                case 'Em Servico': return 'primary';
+                case 'Pronto': return 'info';
+                case 'Entregue': return 'success';
+                default: return 'secondary';
+            }
         }
 
-        function abrirModalOS(id) {
-            osSelecionadaId = id;
-            const os = bancoOS.find(item => item.id === id);
+        // --- FILTRAR OS ---
+        window.filtrarTabela = function() {
+            const busca = document.getElementById('buscaOS').value.toLowerCase();
+            const status = document.getElementById('filtroStatus').value;
+
+            const filtradas = listaOSGeral.filter(os => {
+                const bateuBusca = (os.clienteNome && os.clienteNome.toLowerCase().includes(busca)) ||
+                                   (os.id && os.id.toLowerCase().includes(busca));
+                const bateuStatus = status === "" || os.status === status;
+                return bateuBusca && bateuStatus;
+            });
+
+            renderizarTabela(filtradas);
+        };
+
+        // --- SALVAR / EDITAR OS NO FIRESTORE ---
+        window.salvarOS = async function(e) {
+            e.preventDefault();
+            const docId = document.getElementById('osDocId').value;
+
+            const dadosOS = {
+                clienteNome: document.getElementById('clienteNome').value,
+                clienteFone: document.getElementById('clienteFone').value,
+                atendente: document.getElementById('atendente').value,
+                mecanico: document.getElementById('mecanico').value,
+                status: document.getElementById('status').value,
+                dataInicio: document.getElementById('dataInicio').value,
+                dataTermino: document.getElementById('dataTermino').value,
+                servicoRealizado: document.getElementById('servicoRealizado').value,
+                checklistObs: document.getElementById('checklistObs').value
+            };
+
+            try {
+                if (docId) {
+                    // Editar existente
+                    await updateDoc(doc(db, "ordens_servico", docId), dadosOS);
+                } else {
+                    // Criar Nova
+                    dadosOS.id = "OS-" + Math.floor(1000 + Math.random() * 9000);
+                    dadosOS.criadoEm = serverTimestamp();
+                    await addDoc(collection(db, "ordens_servico"), dadosOS);
+                }
+
+                // Fechar modal e resetar formulário
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalNovaOS'));
+                modal.hide();
+                document.getElementById('formOS').reset();
+                document.getElementById('osDocId').value = '';
+
+            } catch (err) {
+                alert("Erro ao salvar no banco de dados: " + err.message);
+            }
+        };
+
+        // --- EDITAR ---
+        window.editarOS = function(docId) {
+            const os = listaOSGeral.find(item => item.docId === docId);
             if(!os) return;
 
-            document.getElementById('modal-titulo').innerText = `${os.id} - ${os.clienteNome}`;
-            const formatarData = (dt) => dt && dt !== 'A definir' && !isNaN(new Date(dt).getTime()) ? new Date(dt).toLocaleString('pt-BR') : dt;
+            document.getElementById('osDocId').value = os.docId;
+            document.getElementById('clienteNome').value = os.clienteNome || '';
+            document.getElementById('clienteFone').value = os.clienteFone || '';
+            document.getElementById('atendente').value = os.atendente || '';
+            document.getElementById('mecanico').value = os.mecanico || '';
+            document.getElementById('status').value = os.status || 'Em Servico';
+            document.getElementById('dataInicio').value = os.dataInicio || '';
+            document.getElementById('dataTermino').value = os.dataTermino || '';
+            document.getElementById('servicoRealizado').value = os.servicoRealizado || '';
+            document.getElementById('checklistObs').value = os.checklistObs || '';
 
-            let htmlFotos = '';
-            if (os.fotosEntrada && os.fotosEntrada.length > 0) {
-                htmlFotos = `
-                    <div class="p-2 bg-light rounded border mb-3 fotos-no-print">
-                        <strong class="small fw-bold text-dark d-block mb-2"><i class="fa-solid fa-camera me-1"></i>Fotos de Entrada da Moto:</strong>
-                        <div class="row g-2">
-                            ${os.fotosEntrada.map(f => `
-                                <div class="col-3">
-                                    <img src="${f}" class="foto-entrada-detalhe" onclick="window.open('${f}', '_blank')" title="Clique para ampliar">
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
+            document.getElementById('modalTitle').innerText = 'Editar Ordem de Serviço (' + (os.id || '') + ')';
+            const modal = new bootstrap.Modal(document.getElementById('modalNovaOS'));
+            modal.show();
+        };
+
+        // --- DELETAR ---
+        window.deletarOSDirect = async function(id, e) {
+            if(confirm("Tem certeza que deseja excluir esta Ordem de Serviço?")) {
+                try {
+                    await deleteDoc(doc(db, "ordens_servico", id));
+                } catch(err) {
+                    alert("Erro ao deletar: " + err.message);
+                }
             }
+        };
 
-            document.getElementById('modal-corpo').innerHTML = `
-                <div class="text-center mb-3">
-                    <img src="logo.jpg.jpeg" style="width: 80px; height: 80px; object-fit: cover;" class="rounded-circle mb-2" onerror="this.style.display='none'">
-                    <h5 class="fw-bold mb-0 text-danger">OK.M MOTO PEÇAS</h5>
-                    <p class="small text-muted mb-0">ORDEM DE SERVIÇO & CHECKLIST</p>
-                    <small class="fw-bold text-dark">${os.id}</small>
+        // --- PREPARAR IMPRESSÃO ---
+        window.prepararImpressao = function(docId) {
+            const os = listaOSGeral.find(item => item.docId === docId);
+            if(!os) return;
+
+            const area = document.getElementById('printableArea');
+            area.innerHTML = `
+                <div class="text-center mb-4 border-bottom pb-3">
+                    <h2>OK.M GESTÃO DE OFICINAS</h2>
+                    <p class="mb-0">Comprovante de Ordem de Serviço - <strong>${os.id || ''}</strong></p>
                 </div>
-
-                <table class="table table-bordered table-sm small mb-3">
-                    <tbody>
-                        <tr>
-                            <td class="bg-light fw-bold" style="width: 30%;">Placa:</td>
-                            <td><span class="badge bg-dark fs-6">${os.veiculoPlaca || 'Não informada'}</span></td>
-                        </tr>
-                        <tr>
-                            <td class="bg-light fw-bold">Responsável Abertura:</td>
-                            <td>${os.atendente || 'Não informado'}</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-light fw-bold">Mecânico Responsável:</td>
-                            <td>${os.mecanico}</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-light fw-bold">Cliente / Telefone:</td>
-                            <td>${os.clienteNome} (${os.clienteFone})</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-light fw-bold">Veículo:</td>
-                            <td>${os.veiculoMarca} ${os.veiculoModelo}</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-light fw-bold">KM / Combustível:</td>
-                            <td>${os.veiculoKm} km | ${os.veiculoCombustivel}</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-light fw-bold">Data Início:</td>
-                            <td>${formatarData(os.dataInicio)}</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-light fw-bold">Previsão Término:</td>
-                            <td>${formatarData(os.dataTermino)}</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-light fw-bold">Status:</td>
-                            <td><span class="badge ${os.status === 'Finalizada' ? 'bg-success' : 'bg-danger'}">${os.status}</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="p-2 bg-light rounded border mb-3">
-                    <strong class="small fw-bold text-dark">Obs / Entrada / Peças Solicitadas:</strong>
-                    <div class="small mt-1">${os.checklistObs}</div>
+                <div class="row mb-3">
+                    <div class="col-6"><strong>Cliente:</strong> ${os.clienteNome || ''}</div>
+                    <div class="col-6"><strong>Telefone:</strong> ${os.clienteFone || ''}</div>
                 </div>
-
-                ${htmlFotos}
-
-                ${os.servicoRealizado ? `
-                    <div class="p-2 bg-light rounded border border-success mb-3">
-                        <strong class="small fw-bold text-success"><i class="fa-solid fa-wrench me-1"></i>Serviço Realizado / Peças Trocadas:</strong>
-                        <div class="small text-dark mt-1">${os.servicoRealizado}</div>
-                    </div>
-                ` : ''}
-
-                <div class="assinatura-area mt-5 pt-3">
-                    <div class="row text-center">
-                        <div class="col-6">
-                            <div style="border-top: 1px solid #000; margin: 0 10px; padding-top: 5px;">
-                                <small class="fw-bold d-block text-dark">Mecânico: ${os.mecanico}</small>
-                                <small class="text-muted" style="font-size: 10px;">Assinatura do Responsável</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div style="border-top: 1px solid #000; margin: 0 10px; padding-top: 5px;">
-                                <small class="fw-bold d-block text-dark">Cliente: ${os.clienteNome}</small>
-                                <small class="text-muted" style="font-size: 10px;">Assinatura do Cliente</small>
-                            </div>
-                        </div>
-                    </div>
+                <div class="row mb-3">
+                    <div class="col-6"><strong>Atendente:</strong> ${os.atendente || ''}</div>
+                    <div class="col-6"><strong>Mecânico:</strong> ${os.mecanico || ''}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6"><strong>Data Início:</strong> ${os.dataInicio || ''}</div>
+                    <div class="col-6"><strong>Previsão Término:</strong> ${os.dataTermino || ''}</div>
+                </div>
+                <div class="mb-3">
+                    <strong>Status Atual:</strong> ${os.status || ''}
+                </div>
+                <div class="mb-3">
+                    <strong>Serviço Realizado:</strong>
+                    <p class="border p-2 rounded bg-light">${os.servicoRealizado || 'Nenhum informado.'}</p>
+                </div>
+                <div class="mb-3">
+                    <strong>Checklist / Observações do Veículo:</strong>
+                    <p class="border p-2 rounded bg-light">${os.checklistObs || 'Nenhuma informada.'}</p>
+                </div>
+                <div class="mt-5 text-center border-top pt-3">
+                    <p>____________________________________________________<br>Assinatura do Cliente</p>
                 </div>
             `;
 
-            const btnBaixa = document.getElementById('btn-dar-baixa');
-            btnBaixa.style.display = os.status === 'Finalizada' ? 'none' : 'inline-block';
-
-            const modal = new bootstrap.Modal(document.getElementById('modalOS'));
+            const modal = new bootstrap.Modal(document.getElementById('modalImprimir'));
             modal.show();
-        }
+        };
 
-        function abrirModalBaixa() {
-            bootstrap.Modal.getInstance(document.getElementById('modalOS')).hide();
-            document.getElementById('servico-realizado-texto').value = '';
-            const modalBaixa = new bootstrap.Modal(document.getElementById('modalBaixa'));
-            modalBaixa.show();
-        }
-
-        async function confirmarBaixaOS() {
-            if(!osSelecionadaId) return;
-            const os = bancoOS.find(item => item.id === osSelecionadaId);
-            const detalheServico = document.getElementById('servico-realizado-texto').value;
-
-            if(os) {
-                try {
-                    await db.collection("ordens_servico").doc(os.docId).update({
-                        status: 'Finalizada',
-                        servicoRealizado: detalheServico || 'Serviço concluído'
-                    });
-
-                    alert(`Baixa efetuada com sucesso para a ${os.id}! Status alterado para Finalizada.`);
-                    bootstrap.Modal.getInstance(document.getElementById('modalBaixa')).hide();
-                } catch (error) {
-                    console.error("Erro ao atualizar OS: ", error);
-                    alert("Erro ao dar baixa na Ordem de Serviço.");
-                }
-            }
-        }
-
-        async function excluirOSAtual() {
-            if(!osSelecionadaId) return;
-            
-            const senhaDigitada = prompt("Digite a senha de autorização para excluir a Ordem de Serviço:");
-            if (senhaDigitada === null) return;
-            
-            if (senhaDigitada === SENHA_EXCLUSAO) {
-                const os = bancoOS.find(item => item.id === osSelecionadaId);
-                if (os) {
-                    try {
-                        await db.collection("ordens_servico").doc(os.docId).delete();
-                        bootstrap.Modal.getInstance(document.getElementById('modalOS')).hide();
-                        alert("Ordem de Serviço excluída com sucesso.");
-                    } catch (error) {
-                        console.error("Erro ao excluir OS: ", error);
-                        alert("Erro ao excluir a Ordem de Serviço.");
-                    }
-                }
-            } else {
-                alert("Senha incorreta! Exclusão não autorizada.");
-            }
-        }
-
-        async function deletarOSDirect(id, e) {
-            e.stopPropagation();
-
-            const senhaDigitada = prompt(`Digite a senha para excluir a ${id}:`);
-            if (senhaDigitada === null) return;
-
-            if (senhaDigitada === SENHA_EXCLUSAO) {
-                const os = bancoOS.find(item => item.id === id);
-                if (os) {
-                    try {
-                        await db.collection("ordens_servico").doc(os.docId).delete();
-                        alert("Ordem de Serviço excluída com sucesso.");
-                    } catch (error) {
-                        console.error("Erro ao excluir OS: ", error);
-                        alert("Erro ao excluir a Ordem de Serviço.");
-                    }
-                }
-            } else {
-                alert("Senha incorreta! Exclusão não autorizada.");
-            }
-        }
-
-        function imprimirOS() {
+        window.imprimirOS = function() {
             window.print();
-        }
+        };
     </script>
 </body>
 </html>
