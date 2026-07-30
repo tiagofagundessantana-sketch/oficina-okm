@@ -494,6 +494,18 @@
             </div>
         </div>
 
+        <!-- ==================== MODAL DE VISUALIZAÇÃO DE FOTO GRANDE ==================== -->
+        <div class="modal fade" id="modalFotoGrande" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body text-center p-0 position-relative">
+                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1070; filter: invert(1);"></button>
+                        <img id="img-ampliada" src="" class="img-fluid rounded shadow-lg" style="max-height: 85vh; object-fit: contain;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Navegação Inferior -->
@@ -852,7 +864,7 @@
                         <div class="row g-2">
                             ${os.fotosEntrada.map(f => `
                                 <div class="col-3">
-                                    <img src="${f}" class="foto-entrada-detalhe" onclick="window.open('${f}', '_blank')" title="Clique para ampliar">
+                                    <img src="${f}" class="foto-entrada-detalhe" onclick="verFotoGrande('${f}')" title="Clique para ampliar">
                                 </div>
                             `).join('')}
                         </div>
@@ -963,6 +975,12 @@
 
             const modal = new bootstrap.Modal(document.getElementById('modalOS'));
             modal.show();
+        }
+
+        function verFotoGrande(src) {
+            document.getElementById('img-ampliada').src = src;
+            const modalFoto = new bootstrap.Modal(document.getElementById('modalFotoGrande'));
+            modalFoto.show();
         }
 
         function abrirModalBaixa() {
