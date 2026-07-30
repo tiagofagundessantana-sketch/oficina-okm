@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OK.M Gestão de Oficinas</title>
+    <!-- Configurações de Ícone do App -->
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+
     <!-- Bootstrap CSS -->
-     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -138,7 +142,23 @@
             transform: scale(1.03);
         }
 
+        /* Estilo do campo de escrita manual dos mecânicos */
+        .campo-mecanico-print {
+            border: 1px dashed #666;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .linhas-mecanico {
+            border-bottom: 1px solid #ccc;
+            height: 24px;
+            margin-bottom: 6px;
+        }
+
         @media print {
+            @page {
+                margin: 5mm; /* Reduz a margem superior da folha */
+            }
             body * {
                 visibility: hidden;
             }
@@ -151,7 +171,7 @@
                 top: 0;
                 width: 100%;
                 margin: 0;
-                padding: 0;
+                padding: 0 !important;
                 background: white !important;
             }
             .modal-dialog {
@@ -161,13 +181,25 @@
             .modal-content {
                 border: none !important;
                 box-shadow: none !important;
+                padding: 0 !important;
+            }
+            .modal-body {
+                padding-top: 0 !important; /* Puxa a logo mais para cima no papel */
             }
             .modal-header, .modal-footer, .no-print, .fotos-no-print {
                 display: none !important;
             }
+            .header-impressao {
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+            }
             .assinatura-area {
-                margin-top: 50px !important;
+                margin-top: 30px !important;
                 display: block !important;
+            }
+            .campo-mecanico-print {
+                border: 1px solid #000 !important;
+                background: #fff !important;
             }
         }
     </style>
@@ -305,11 +337,11 @@
                     <form id="form-os" onsubmit="salvarOS(event)">
                         
                         <div class="row g-2 mb-3">
-                            <div class="col-12">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-user-pen text-danger me-1"></i> Responsável pela Abertura da Ordem de Serviço</label>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-user-pen text-danger me-1"></i> Responsável pela Abertura</label>
                                 <input type="text" id="atendente" class="form-control form-control-sm" placeholder="Nome do atendente / recepcionista" required>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 col-md-6">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user-gear text-danger me-1"></i> Mecânico Responsável</label>
                                 <input type="text" id="mecanico" class="form-control form-control-sm" placeholder="Nome do mecânico" required>
                             </div>
@@ -325,20 +357,28 @@
 
                         <hr class="my-3">
 
-                        <!-- Busca / Preenchimento de Placa -->
+                        <!-- Busca / Preenchimento de Placa e Dados do Cliente -->
                         <div class="row g-2 mb-3">
                             <div class="col-12">
                                 <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo (Digite para puxar dados cadastrados)</label>
                                 <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="EX: ABC-1234 OU ABC1D23" oninput="buscarDadosPorPlaca(this.value)" required>
-                                <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check me-1"></i>Dados do veículo carregados do histórico!</small>
+                                <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check me-1"></i>Dados do veículo/cliente carregados do histórico!</small>
                             </div>
-                            <div class="col-7">
+                            <div class="col-12 col-md-6">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user text-danger me-1"></i> Nome do Cliente</label>
                                 <input type="text" id="cliente-nome" class="form-control form-control-sm" placeholder="Ex: Tiago" required>
                             </div>
-                            <div class="col-5">
+                            <div class="col-6 col-md-3">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-address-card text-danger me-1"></i> CPF do Proprietário</label>
+                                <input type="text" id="cliente-cpf" class="form-control form-control-sm" placeholder="000.000.000-00">
+                            </div>
+                            <div class="col-6 col-md-3">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-phone text-danger me-1"></i> Telefone / Whats</label>
                                 <input type="tel" id="cliente-fone" class="form-control form-control-sm" placeholder="(00) 00000-0000" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-location-dot text-danger me-1"></i> Endereço Completo</label>
+                                <input type="text" id="cliente-endereco" class="form-control form-control-sm" placeholder="Rua, Número, Bairro, Cidade">
                             </div>
                         </div>
 
@@ -471,7 +511,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // CONFIGURAÇÕES DO FIREBASE (Chaves reais da sua conta)
+        // CONFIGURAÇÕES DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCVoxT47JOLrcOEf-AsBC74U3k-zjWaaDs",
             authDomain: "okm-gestao.firebaseapp.com",
@@ -508,7 +548,6 @@
                 document.getElementById('btn-logout').style.display = 'block';
                 document.getElementById('bar-bottom-nav').style.display = 'flex';
                 
-                // Inicializar Firestore escuta
                 iniciarEscutaFirestore();
                 trocarTela('tela-painel');
             } else {
@@ -526,7 +565,6 @@
             document.getElementById('login-senha').value = '';
         }
 
-        // ESCUTA EM TEMPO REAL NO FIRESTORE
         function iniciarEscutaFirestore() {
             db.collection("ordens_servico").onSnapshot((snapshot) => {
                 bancoOS = [];
@@ -633,7 +671,9 @@
 
                 if (veiculoEncontrado) {
                     document.getElementById('cliente-nome').value = veiculoEncontrado.clienteNome || '';
+                    document.getElementById('cliente-cpf').value = veiculoEncontrado.clienteCpf || '';
                     document.getElementById('cliente-fone').value = veiculoEncontrado.clienteFone || '';
+                    document.getElementById('cliente-endereco').value = veiculoEncontrado.clienteEndereco || '';
                     document.getElementById('veiculo-marca').value = veiculoEncontrado.veiculoMarca || '';
                     document.getElementById('veiculo-modelo').value = veiculoEncontrado.veiculoModelo || '';
                     msgContainer.style.display = 'block';
@@ -656,7 +696,9 @@
                 dataTermino: dataTerminoVal ? dataTerminoVal : 'A definir',
                 veiculoPlaca: document.getElementById('veiculo-placa').value.toUpperCase(),
                 clienteNome: document.getElementById('cliente-nome').value,
+                clienteCpf: document.getElementById('cliente-cpf').value || 'Não informado',
                 clienteFone: document.getElementById('cliente-fone').value,
+                clienteEndereco: document.getElementById('cliente-endereco').value || 'Não informado',
                 veiculoMarca: document.getElementById('veiculo-marca').value,
                 veiculoModelo: document.getElementById('veiculo-modelo').value,
                 veiculoKm: document.getElementById('veiculo-km').value,
@@ -677,7 +719,7 @@
                 fotosEntradaTemp = [];
                 renderizarPreviewsFotos();
                 
-                alert('Ordem de Serviço criada com sucesso no Firestore!');
+                alert('Ordem de Serviço criada com sucesso!');
                 trocarTela('tela-painel');
             } catch (error) {
                 console.error("Erro ao salvar OS: ", error);
@@ -814,8 +856,8 @@
             }
 
             document.getElementById('modal-corpo').innerHTML = `
-                <div class="text-center mb-3">
-                    <img src="logo.jpg.jpeg" style="width: 80px; height: 80px; object-fit: cover;" class="rounded-circle mb-2" onerror="this.style.display='none'">
+                <div class="text-center mb-2 header-impressao">
+                    <img src="logo.jpg.jpeg" style="width: 75px; height: 75px; object-fit: cover;" class="rounded-circle mb-1" onerror="this.style.display='none'">
                     <h5 class="fw-bold mb-0 text-danger">OK.M MOTO PEÇAS</h5>
                     <p class="small text-muted mb-0">ORDEM DE SERVIÇO & CHECKLIST</p>
                     <small class="fw-bold text-dark">${os.id}</small>
@@ -824,8 +866,20 @@
                 <table class="table table-bordered table-sm small mb-3">
                     <tbody>
                         <tr>
-                            <td class="bg-light fw-bold" style="width: 30%;">Placa:</td>
+                            <td class="bg-light fw-bold" style="width: 25%;">Placa:</td>
                             <td><span class="badge bg-dark fs-6">${os.veiculoPlaca || 'Não informada'}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Cliente / Fone:</td>
+                            <td>${os.clienteNome} (${os.clienteFone})</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">CPF do Cliente:</td>
+                            <td>${os.clienteCpf || 'Não informado'}</td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Endereço:</td>
+                            <td>${os.clienteEndereco || 'Não informado'}</td>
                         </tr>
                         <tr>
                             <td class="bg-light fw-bold">Responsável Abertura:</td>
@@ -834,10 +888,6 @@
                         <tr>
                             <td class="bg-light fw-bold">Mecânico Responsável:</td>
                             <td>${os.mecanico}</td>
-                        </tr>
-                        <tr>
-                            <td class="bg-light fw-bold">Cliente / Telefone:</td>
-                            <td>${os.clienteNome} (${os.clienteFone})</td>
                         </tr>
                         <tr>
                             <td class="bg-light fw-bold">Veículo:</td>
@@ -876,7 +926,16 @@
                     </div>
                 ` : ''}
 
-                <div class="assinatura-area mt-5 pt-3">
+                <!-- CAMPO PARA O MECÂNICO ANOTAR À MÃO ANTES DA BAIXA -->
+                <div class="campo-mecanico-print mb-3">
+                    <strong class="small fw-bold text-dark d-block mb-1"><i class="fa-solid fa-pen me-1"></i>Anotações / Laudo do Mecânico (Serviços e Peças para dar Baixa):</strong>
+                    <div class="linhas-mecanico"></div>
+                    <div class="linhas-mecanico"></div>
+                    <div class="linhas-mecanico"></div>
+                    <div class="linhas-mecanico"></div>
+                </div>
+
+                <div class="assinatura-area mt-4 pt-2">
                     <div class="row text-center">
                         <div class="col-6">
                             <div style="border-top: 1px solid #000; margin: 0 10px; padding-top: 5px;">
