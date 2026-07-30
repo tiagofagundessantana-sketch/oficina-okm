@@ -142,7 +142,6 @@
             transform: scale(1.03);
         }
 
-        /* Estilo do campo de escrita manual dos mecânicos */
         .campo-mecanico-print {
             border: 1px dashed #666;
             padding: 10px;
@@ -155,10 +154,9 @@
             margin-bottom: 6px;
         }
 
-        /* CONFIGURAÇÕES DE IMPRESSÃO COM LOGO BEM NO TOPO */
         @media print {
             @page {
-                margin: 0mm !important; /* Zera margens do papel */
+                margin: 0mm !important;
             }
             body * {
                 visibility: hidden;
@@ -186,7 +184,7 @@
             }
             .modal-body {
                 padding-top: 0 !important;
-                margin-top: -15px !important; /* Sobe a logo ao máximo */
+                margin-top: -15px !important;
             }
             .modal-header, .modal-footer, .no-print, .fotos-no-print {
                 display: none !important;
@@ -230,7 +228,7 @@
             <img src="logo.jpg.jpeg" alt="OK.M Moto Peças" class="logo-container img-fluid rounded-circle shadow-sm" onerror="this.onerror=null; this.src='https://placehold.co/120x120/121212/A81C1C?text=OK.M'">
         </div>
 
-        <!-- ==================== TELA DE LOGIN ==================== -->
+        <!-- TELA DE LOGIN -->
         <div id="tela-login" class="row justify-content-center mt-4">
             <div class="col-12 col-md-5">
                 <div class="card card-custom p-4">
@@ -259,7 +257,7 @@
             </div>
         </div>
 
-        <!-- ==================== TELA 1: PAINEL / DASHBOARD ==================== -->
+        <!-- TELA 1: PAINEL / DASHBOARD -->
         <div id="tela-painel" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="fw-bold mb-0"><i class="fa-solid fa-chart-line text-danger me-2"></i>Painel Geral</h5>
@@ -326,13 +324,13 @@
                 </div>
             </div>
 
-            <h6 class="fw-bold mb-2"><i class="fa-solid fa-list-check me-2"></i>Ordens de Serviço</h6>
+            <h6 class="fw-bold mb-2"><i class="fa-solid fa-list-check me-2"></i>Ordens de Serviço (Últimas 50)</h6>
             <div id="lista-os">
                 <!-- As OS aparecerão aqui -->
             </div>
         </div>
 
-        <!-- ==================== TELA 2: NOVA OS ==================== -->
+        <!-- TELA 2: NOVA OS -->
         <div id="tela-nova-os" style="display: none;">
             <div class="card card-custom mb-4">
                 <div class="card-header card-header-okm">
@@ -340,7 +338,6 @@
                 </div>
                 <div class="card-body p-3">
                     <form id="form-os" onsubmit="salvarOS(event)">
-                        
                         <div class="row g-2 mb-3">
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user-pen text-danger me-1"></i> Responsável pela Abertura</label>
@@ -362,10 +359,9 @@
 
                         <hr class="my-3">
 
-                        <!-- Busca / Preenchimento de Placa e Dados do Cliente -->
                         <div class="row g-2 mb-3">
                             <div class="col-12">
-                                <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo (Digite para puxar dados cadastrados)</label>
+                                <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo (Digite para puxar dados)</label>
                                 <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="EX: ABC-1234 OU ABC1D23" oninput="buscarDadosPorPlaca(this.value)" required>
                                 <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check me-1"></i>Dados do veículo/cliente carregados do histórico!</small>
                             </div>
@@ -419,7 +415,7 @@
                             <textarea id="checklist-obs" class="form-control form-control-sm" rows="3" placeholder="Avarias pré-existentes, observações do cliente, serviços solicitados..."></textarea>
                         </div>
 
-                        <!-- SEÇÃO DE FOTOS DA MOTO (ENTRADA) -->
+                        <!-- SEÇÃO DE FOTOS DA MOTO -->
                         <div class="p-3 bg-light rounded border border-danger border-opacity-50 mb-3">
                             <label class="form-label fw-bold small text-danger d-flex align-items-center justify-content-between mb-2">
                                 <span><i class="fa-solid fa-camera me-1"></i> Fotos de Entrada da Moto (Avarias/Estado)</span>
@@ -437,7 +433,7 @@
                         </div>
 
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-vermelho py-2">
+                            <button type="submit" id="btn-salvar-os" class="btn btn-vermelho py-2">
                                 <i class="fa-solid fa-save me-1"></i> Gerar Ordem de Serviço
                             </button>
                         </div>
@@ -446,7 +442,7 @@
             </div>
         </div>
 
-        <!-- ==================== MODAL DE DETALHES ==================== -->
+        <!-- MODAL DE DETALHES -->
         <div class="modal fade" id="modalOS" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
@@ -472,7 +468,7 @@
             </div>
         </div>
 
-        <!-- ==================== MODAL DE CONFIRMAÇÃO DE BAIXA ==================== -->
+        <!-- MODAL DE CONFIRMAÇÃO DE BAIXA -->
         <div class="modal fade" id="modalBaixa" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -494,7 +490,7 @@
             </div>
         </div>
 
-        <!-- ==================== MODAL DE VISUALIZAÇÃO DE FOTO GRANDE ==================== -->
+        <!-- MODAL DE VISUALIZAÇÃO DE FOTO GRANDE -->
         <div class="modal fade" id="modalFotoGrande" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content bg-transparent border-0">
@@ -541,6 +537,11 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // OTIMIZAÇÃO 1: Ativa o Cache Offline no navegador para carregamento instantâneo
+        db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+            console.warn("Aviso na persistência offline:", err.code);
+        });
+
         // CREDENCIAIS DE ACESSO
         const USER_CORRETO = "LUCAS";
         const SENHA_CORRETA = "4958";
@@ -552,7 +553,6 @@
 
         document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
 
-        /* --- LÓGICA DE LOGIN --- */
         function autenticarUsuario(e) {
             e.preventDefault();
             const usuarioInput = document.getElementById('login-usuario').value.trim().toUpperCase();
@@ -582,8 +582,12 @@
             document.getElementById('login-senha').value = '';
         }
 
+        // OTIMIZAÇÃO 2: Limita a busca apenas às últimas 50 OSs mais recentes
         function iniciarEscutaFirestore() {
-            db.collection("ordens_servico").onSnapshot((snapshot) => {
+            db.collection("ordens_servico")
+              .orderBy("criadoEm", "desc")
+              .limit(50)
+              .onSnapshot((snapshot) => {
                 bancoOS = [];
                 snapshot.forEach((doc) => {
                     bancoOS.push({ docId: doc.id, ...doc.data() });
@@ -604,7 +608,6 @@
             if(tela === 'tela-painel') renderizarPainel();
         }
 
-        /* --- LÓGICA DE FOTOS DA MOTO --- */
         async function adicionarFotosEntrada(input) {
             if (!input.files || input.files.length === 0) return;
 
@@ -623,6 +626,7 @@
             input.value = '';
         }
 
+        // OTIMIZAÇÃO 3: Compressão mais leve das fotos (máx 600px de largura e qualidade 0.45)
         function comprimirImagem(file) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -633,7 +637,7 @@
 
                     let largura = img.width;
                     let altura = img.height;
-                    const maxDim = 800;
+                    const maxDim = 600;
 
                     if (largura > maxDim || altura > maxDim) {
                         if (largura > altura) {
@@ -649,7 +653,7 @@
                     canvas.height = altura;
                     ctx.drawImage(img, 0, 0, largura, altura);
 
-                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    resolve(canvas.toDataURL('image/jpeg', 0.45));
                 };
             });
         }
@@ -703,6 +707,10 @@
         async function salvarOS(e) {
             e.preventDefault();
 
+            const btnSalvar = document.getElementById('btn-salvar-os');
+            btnSalvar.disabled = true;
+            btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Salvando...';
+
             const dataTerminoVal = document.getElementById('data-termino').value;
 
             const novaOS = {
@@ -741,6 +749,9 @@
             } catch (error) {
                 console.error("Erro ao salvar OS: ", error);
                 alert("Ocorreu um erro ao salvar a Ordem de Serviço no servidor.");
+            } finally {
+                btnSalvar.disabled = false;
+                btnSalvar.innerHTML = '<i class="fa-solid fa-save me-1"></i> Gerar Ordem de Serviço';
             }
         }
 
@@ -943,7 +954,6 @@
                     </div>
                 ` : ''}
 
-                <!-- CAMPO PARA O MECÂNICO ANOTAR À MÃO ANTES DA BAIXA -->
                 <div class="campo-mecanico-print mb-3">
                     <strong class="small fw-bold text-dark d-block mb-1"><i class="fa-solid fa-pen me-1"></i>Anotações / Laudo do Mecânico (Serviços e Peças para dar Baixa):</strong>
                     <div class="linhas-mecanico"></div>
