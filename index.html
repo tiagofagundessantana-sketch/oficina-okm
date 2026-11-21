@@ -83,7 +83,7 @@
             background: none;
             border: none;
             color: #888;
-            font-size: 12px;
+            font-size: 11px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -95,7 +95,7 @@
         }
 
         .bottom-nav i {
-            font-size: 20px;
+            font-size: 19px;
             margin-bottom: 2px;
         }
 
@@ -339,11 +339,15 @@
                 <div class="card-body p-3">
                     <form id="form-os" onsubmit="salvarOS(event)">
                         <div class="row g-2 mb-3">
-                            <div class="col-12 col-md-6">
+                            <div class="col-12 col-md-4">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user-pen text-danger me-1"></i> Responsável pela Abertura</label>
                                 <input type="text" id="atendente" class="form-control form-control-sm" placeholder="Nome do atendente / recepcionista" required>
                             </div>
-                            <div class="col-12 col-md-6">
+                            <div class="col-4 col-md-3">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-id-badge text-danger me-1"></i> Matrícula Mec.</label>
+                                <input type="text" id="mecanico-matricula" class="form-control form-control-sm text-uppercase" placeholder="Ex: 01" oninput="preencherMecanicoPorMatricula('mecanico-matricula', 'mecanico')">
+                            </div>
+                            <div class="col-8 col-md-5">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user-gear text-danger me-1"></i> Mecânico Responsável</label>
                                 <input type="text" id="mecanico" class="form-control form-control-sm" placeholder="Nome do mecânico" required>
                             </div>
@@ -442,6 +446,81 @@
             </div>
         </div>
 
+        <!-- TELA 3: RELATÓRIO MENSAL POR MATRÍCULA -->
+        <div id="tela-relatorio" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-clipboard-check text-danger me-2"></i>Relatório por Matrícula</h5>
+                <button class="btn btn-sm btn-outline-dark" onclick="trocarTela('tela-mecanicos')">
+                    <i class="fa-solid fa-id-badge me-1"></i> Mecânicos
+                </button>
+            </div>
+
+            <div class="card card-custom p-3 mb-3 border-start border-danger border-4">
+                <div class="row g-2 align-items-end">
+                    <div class="col-6 col-md-4">
+                        <label class="form-label small fw-bold mb-1">Mês / Ano de Fechamento</label>
+                        <input type="month" id="relatorio-mes" class="form-control form-control-sm" onchange="renderizarRelatorioMatriculas()">
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="form-label small fw-bold mb-1">Filtrar Matrícula (Opcional)</label>
+                        <input type="text" id="relatorio-matricula" class="form-control form-control-sm text-uppercase" placeholder="Ex: 01 ou MEC-02" oninput="renderizarRelatorioMatriculas()">
+                    </div>
+                    <div class="col-12 col-md-4 d-flex gap-1">
+                        <button class="btn btn-sm btn-vermelho flex-fill" onclick="renderizarRelatorioMatriculas()">
+                            <i class="fa-solid fa-magnifying-glass me-1"></i> Consultar
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="limparFiltroRelatorio()" title="Mês Atual">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo de Serviços por Matrícula -->
+            <div class="card card-custom p-3 mb-3">
+                <h6 class="fw-bold text-dark mb-2"><i class="fa-solid fa-users-gear text-danger me-1"></i> Total de Serviços Fechados por Matrícula</h6>
+                <div id="resumo-matriculas"></div>
+            </div>
+
+            <!-- Lista de Notas Fechadas no Período -->
+            <h6 class="fw-bold mb-2"><i class="fa-solid fa-file-circle-check me-2"></i>Notas Finalizadas no Filtro</h6>
+            <div id="lista-relatorio-os"></div>
+        </div>
+
+        <!-- TELA 4: CADASTRO DE MECÂNICOS E MATRÍCULAS -->
+        <div id="tela-mecanicos" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-id-badge text-danger me-2"></i>Cadastro de Mecânicos</h5>
+                <button class="btn btn-sm btn-outline-dark" onclick="trocarTela('tela-relatorio')">
+                    <i class="fa-solid fa-chart-bar me-1"></i> Ver Relatório
+                </button>
+            </div>
+
+            <div class="card card-custom p-3 mb-3 border-start border-danger border-4">
+                <h6 class="fw-bold text-danger mb-2"><i class="fa-solid fa-user-plus me-1"></i> Nova Matrícula de Mecânico</h6>
+                <form onsubmit="salvarMecanico(event)" class="row g-2">
+                    <div class="col-4 col-md-3">
+                        <label class="form-label small fw-bold mb-1">Matrícula</label>
+                        <input type="text" id="cad-mecanico-matricula" class="form-control form-control-sm text-uppercase fw-bold" placeholder="Ex: 01" required>
+                    </div>
+                    <div class="col-8 col-md-6">
+                        <label class="form-label small fw-bold mb-1">Nome do Mecânico</label>
+                        <input type="text" id="cad-mecanico-nome" class="form-control form-control-sm" placeholder="Ex: João da Silva" required>
+                    </div>
+                    <div class="col-12 col-md-3 d-grid align-items-end">
+                        <button type="submit" id="btn-salvar-mecanico" class="btn btn-sm btn-vermelho py-2">
+                            <i class="fa-solid fa-plus me-1"></i> Cadastrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card card-custom p-3">
+                <h6 class="fw-bold mb-2"><i class="fa-solid fa-list me-1"></i> Mecânicos Cadastrados</h6>
+                <div id="lista-mecanicos"></div>
+            </div>
+        </div>
+
         <!-- MODAL DE DETALHES -->
         <div class="modal fade" id="modalOS" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -477,6 +556,18 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body p-3">
+                        <div class="row g-2 mb-3">
+                            <div class="col-5">
+                                <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-badge me-1"></i> Matrícula do Mecânico *</label>
+                                <input type="text" id="baixa-mecanico-matricula" class="form-control form-control-sm fw-bold text-uppercase border-danger" placeholder="Ex: 01" oninput="preencherMecanicoPorMatricula('baixa-mecanico-matricula', 'baixa-mecanico-nome')" required>
+                            </div>
+                            <div class="col-7">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-user-gear text-success me-1"></i> Nome do Mecânico *</label>
+                                <input type="text" id="baixa-mecanico-nome" class="form-control form-control-sm" placeholder="Nome de quem fechou" required>
+                            </div>
+                        </div>
+                        <small id="msg-baixa-mecanico" class="text-success fw-bold d-block mb-2" style="display:none;"></small>
+
                         <label class="form-label fw-bold small"><i class="fa-solid fa-wrench text-success me-1"></i> O que foi feito no veículo?</label>
                         <textarea id="servico-realizado-texto" class="form-control form-control-sm" rows="4" placeholder="Descreva as peças trocadas, serviços realizados, mão de obra, valores..."></textarea>
                     </div>
@@ -514,6 +605,14 @@
             <i class="fa-solid fa-plus-circle"></i>
             Nova OS
         </button>
+        <button id="nav-relatorio" onclick="trocarTela('tela-relatorio')">
+            <i class="fa-solid fa-clipboard-check"></i>
+            Relatório
+        </button>
+        <button id="nav-mecanicos" onclick="trocarTela('tela-mecanicos')">
+            <i class="fa-solid fa-id-badge"></i>
+            Mecânicos
+        </button>
     </div>
 
     <!-- Bootstrap JS -->
@@ -548,10 +647,16 @@
         const SENHA_EXCLUSAO = "4958";
 
         let bancoOS = [];
+        let bancoMecanicos = [];
         let osSelecionadaId = null;
         let fotosEntradaTemp = [];
 
         document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
+        document.getElementById('relatorio-mes').value = new Date().toISOString().slice(0, 7);
+
+        function normalizarMatricula(mat) {
+            return (mat || '').toString().trim().toUpperCase();
+        }
 
         function autenticarUsuario(e) {
             e.preventDefault();
@@ -566,6 +671,7 @@
                 document.getElementById('bar-bottom-nav').style.display = 'flex';
                 
                 iniciarEscutaFirestore();
+                iniciarEscutaMecanicos();
                 trocarTela('tela-painel');
             } else {
                 msgErro.style.display = 'block';
@@ -576,6 +682,8 @@
             document.getElementById('tela-login').style.display = 'flex';
             document.getElementById('tela-painel').style.display = 'none';
             document.getElementById('tela-nova-os').style.display = 'none';
+            document.getElementById('tela-relatorio').style.display = 'none';
+            document.getElementById('tela-mecanicos').style.display = 'none';
             document.getElementById('btn-logout').style.display = 'none';
             document.getElementById('bar-bottom-nav').style.display = 'none';
             document.getElementById('login-usuario').value = '';
@@ -593,19 +701,135 @@
                     bancoOS.push({ docId: doc.id, ...doc.data() });
                 });
                 renderizarPainel();
+                if (document.getElementById('tela-relatorio').style.display !== 'none') {
+                    renderizarRelatorioMatriculas();
+                }
             }, (error) => {
                 console.error("Erro ao carregar Ordens de Serviço do Firestore: ", error);
+            });
+        }
+
+        function iniciarEscutaMecanicos() {
+            db.collection("mecanicos")
+              .orderBy("matricula", "asc")
+              .onSnapshot((snapshot) => {
+                bancoMecanicos = [];
+                snapshot.forEach((doc) => {
+                    bancoMecanicos.push({ docId: doc.id, ...doc.data() });
+                });
+                renderizarMecanicos();
+                if (document.getElementById('tela-relatorio').style.display !== 'none') {
+                    renderizarRelatorioMatriculas();
+                }
+            }, (error) => {
+                console.error("Erro ao carregar mecânicos do Firestore: ", error);
             });
         }
 
         function trocarTela(tela) {
             document.getElementById('tela-painel').style.display = tela === 'tela-painel' ? 'block' : 'none';
             document.getElementById('tela-nova-os').style.display = tela === 'tela-nova-os' ? 'block' : 'none';
+            document.getElementById('tela-relatorio').style.display = tela === 'tela-relatorio' ? 'block' : 'none';
+            document.getElementById('tela-mecanicos').style.display = tela === 'tela-mecanicos' ? 'block' : 'none';
 
             document.getElementById('nav-painel').classList.toggle('active', tela === 'tela-painel');
             document.getElementById('nav-nova-os').classList.toggle('active', tela === 'tela-nova-os');
+            document.getElementById('nav-relatorio').classList.toggle('active', tela === 'tela-relatorio');
+            document.getElementById('nav-mecanicos').classList.toggle('active', tela === 'tela-mecanicos');
 
-            if(tela === 'tela-painel') renderizarPainel();
+            if (tela === 'tela-painel') renderizarPainel();
+            if (tela === 'tela-relatorio') renderizarRelatorioMatriculas();
+            if (tela === 'tela-mecanicos') renderizarMecanicos();
+        }
+
+        function preencherMecanicoPorMatricula(inputMatId, inputNomeId) {
+            const mat = normalizarMatricula(document.getElementById(inputMatId).value);
+            const inputNome = document.getElementById(inputNomeId);
+            const msgBaixa = document.getElementById('msg-baixa-mecanico');
+
+            if (!mat) {
+                if (msgBaixa) msgBaixa.style.display = 'none';
+                return;
+            }
+
+            const encontrado = bancoMecanicos.find(m => normalizarMatricula(m.matricula) === mat);
+            if (encontrado) {
+                inputNome.value = encontrado.nome;
+                if (msgBaixa && inputMatId === 'baixa-mecanico-matricula') {
+                    msgBaixa.style.display = 'block';
+                    msgBaixa.className = 'text-success fw-bold d-block mb-2';
+                    msgBaixa.innerHTML = `<i class="fa-solid fa-circle-check me-1"></i>Matrícula confirmada: ${encontrado.nome}`;
+                }
+            } else if (msgBaixa && inputMatId === 'baixa-mecanico-matricula') {
+                msgBaixa.style.display = 'block';
+                msgBaixa.className = 'text-warning fw-bold d-block mb-2';
+                msgBaixa.innerHTML = `<i class="fa-solid fa-circle-info me-1"></i>Matrícula nova: será registrada ao confirmar a baixa.`;
+            }
+        }
+
+        async function salvarMecanico(e) {
+            e.preventDefault();
+            const matricula = normalizarMatricula(document.getElementById('cad-mecanico-matricula').value);
+            const nome = document.getElementById('cad-mecanico-nome').value.trim();
+
+            if (!matricula || !nome) return;
+
+            const btn = document.getElementById('btn-salvar-mecanico');
+            btn.disabled = true;
+
+            try {
+                const existente = bancoMecanicos.find(m => normalizarMatricula(m.matricula) === matricula);
+                if (existente) {
+                    await db.collection("mecanicos").doc(existente.docId).update({ matricula, nome });
+                    alert(`Mecânico da matrícula ${matricula} atualizado com sucesso!`);
+                } else {
+                    await db.collection("mecanicos").add({
+                        matricula,
+                        nome,
+                        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    alert(`Mecânico ${nome} (Matrícula: ${matricula}) cadastrado!`);
+                }
+                document.getElementById('cad-mecanico-matricula').value = '';
+                document.getElementById('cad-mecanico-nome').value = '';
+            } catch (error) {
+                console.error("Erro ao salvar mecânico:", error);
+                alert("Erro ao salvar mecânico.");
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function excluirMecanico(docId, matricula) {
+            if (!confirm(`Deseja realmente remover a matrícula ${matricula}?`)) return;
+            try {
+                await db.collection("mecanicos").doc(docId).delete();
+            } catch (error) {
+                console.error("Erro ao excluir mecânico:", error);
+                alert("Erro ao remover mecânico.");
+            }
+        }
+
+        function renderizarMecanicos() {
+            const container = document.getElementById('lista-mecanicos');
+            if (!container) return;
+
+            if (bancoMecanicos.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted py-3"><small>Nenhum mecânico cadastrado ainda.</small></div>';
+                return;
+            }
+
+            container.innerHTML = bancoMecanicos.map(m => `
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>
+                        <span class="badge bg-dark me-2">MAT: ${normalizarMatricula(m.matricula)}</span>
+                        <strong class="text-dark">${m.nome}</strong>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger border-0" onclick="excluirMecanico('${m.docId}', '${normalizarMatricula(m.matricula)}')" title="Excluir">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
         }
 
         async function adicionarFotosEntrada(input) {
@@ -712,11 +936,14 @@
             btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Salvando...';
 
             const dataTerminoVal = document.getElementById('data-termino').value;
+            const matAbertura = normalizarMatricula(document.getElementById('mecanico-matricula').value);
+            const nomeMecanico = document.getElementById('mecanico').value.trim();
 
             const novaOS = {
                 id: 'OS-' + Math.floor(1000 + Math.random() * 9000),
                 atendente: document.getElementById('atendente').value,
-                mecanico: document.getElementById('mecanico').value,
+                mecanicoMatricula: matAbertura,
+                mecanico: nomeMecanico,
                 dataInicio: document.getElementById('data-inicio').value,
                 dataTermino: dataTerminoVal ? dataTerminoVal : 'A definir',
                 veiculoPlaca: document.getElementById('veiculo-placa').value.toUpperCase(),
@@ -731,6 +958,9 @@
                 checklistObs: document.getElementById('checklist-obs').value || 'Nenhuma observação',
                 fotosEntrada: [...fotosEntradaTemp],
                 servicoRealizado: '',
+                mecanicoFechamentoMatricula: '',
+                mecanicoFechamentoNome: '',
+                dataFechamento: '',
                 status: 'Em Serviço',
                 criadoEm: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -816,6 +1046,7 @@
             ordensFiltradas.forEach(os => {
                 const badgeColor = os.status === 'Finalizada' ? 'bg-success' : 'bg-danger';
                 const qtdFotos = os.fotosEntrada ? os.fotosEntrada.length : 0;
+                const matFechamento = normalizarMatricula(os.mecanicoFechamentoMatricula);
                 
                 let dataFormatada = os.dataInicio;
                 if (os.dataInicio && !isNaN(new Date(os.dataInicio).getTime())) {
@@ -830,6 +1061,7 @@
                         <div>
                             <strong class="text-danger" onclick="abrirModalOS('${os.id}')" style="cursor:pointer;">${os.id}</strong>
                             ${os.veiculoPlaca ? `<span class="badge bg-dark ms-2">${os.veiculoPlaca}</span>` : ''}
+                            ${matFechamento ? `<span class="badge bg-success ms-1" title="Fechada pela matrícula"><i class="fa-solid fa-id-badge me-1"></i>MAT ${matFechamento}</span>` : ''}
                             ${qtdFotos > 0 ? `<span class="badge bg-secondary ms-1" title="${qtdFotos} fotos registradas"><i class="fa-solid fa-camera"></i> ${qtdFotos}</span>` : ''}
                         </div>
                         <div>
@@ -859,6 +1091,109 @@
             renderizarPainel();
         }
 
+        function obterChaveMesFechamento(os) {
+            if (os.dataFechamento) {
+                const dt = new Date(os.dataFechamento);
+                if (!isNaN(dt.getTime())) {
+                    return dt.toISOString().slice(0, 7);
+                }
+                if (typeof os.dataFechamento === 'string' && os.dataFechamento.length >= 7) {
+                    return os.dataFechamento.slice(0, 7);
+                }
+            }
+            if (os.dataInicio) {
+                const dt = new Date(os.dataInicio);
+                if (!isNaN(dt.getTime())) {
+                    return dt.toISOString().slice(0, 7);
+                }
+            }
+            return '';
+        }
+
+        function renderizarRelatorioMatriculas() {
+            const mesSelecionado = document.getElementById('relatorio-mes').value;
+            const matFiltro = normalizarMatricula(document.getElementById('relatorio-matricula').value);
+            const resumoEl = document.getElementById('resumo-matriculas');
+            const listaEl = document.getElementById('lista-relatorio-os');
+
+            const finalizadas = bancoOS.filter(os => {
+                if (os.status !== 'Finalizada') return false;
+
+                if (mesSelecionado) {
+                    const chaveOS = obterChaveMesFechamento(os);
+                    if (chaveOS !== mesSelecionado) return false;
+                }
+
+                const matOS = normalizarMatricula(os.mecanicoFechamentoMatricula || os.mecanicoMatricula);
+                if (matFiltro && !matOS.includes(matFiltro)) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            const contagemPorMatricula = {};
+            finalizadas.forEach(os => {
+                const mat = normalizarMatricula(os.mecanicoFechamentoMatricula || os.mecanicoMatricula) || 'SEM MATRÍCULA';
+                const nome = os.mecanicoFechamentoNome || os.mecanico || 'Não informado';
+                if (!contagemPorMatricula[mat]) {
+                    contagemPorMatricula[mat] = { matricula: mat, nome, total: 0 };
+                }
+                contagemPorMatricula[mat].total += 1;
+            });
+
+            const ranking = Object.values(contagemPorMatricula).sort((a, b) => b.total - a.total);
+
+            if (ranking.length === 0) {
+                resumoEl.innerHTML = '<div class="text-muted small py-2">Nenhuma nota finalizada encontrada para o mês/matrícula selecionados.</div>';
+            } else {
+                resumoEl.innerHTML = ranking.map(item => `
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div>
+                            <span class="badge bg-dark me-2">MAT: ${item.matricula}</span>
+                            <strong class="text-dark">${item.nome}</strong>
+                        </div>
+                        <span class="badge bg-success fs-6">${item.total} ${item.total === 1 ? 'serviço' : 'serviços'}</span>
+                    </div>
+                `).join('');
+            }
+
+            if (finalizadas.length === 0) {
+                listaEl.innerHTML = '<div class="text-center text-muted my-3"><small>Sem ordens de serviço finalizadas neste filtro.</small></div>';
+                return;
+            }
+
+            listaEl.innerHTML = finalizadas.map(os => {
+                const mat = normalizarMatricula(os.mecanicoFechamentoMatricula || os.mecanicoMatricula) || 'SEM MATRÍCULA';
+                const nomeMec = os.mecanicoFechamentoNome || os.mecanico || 'Não informado';
+                const dataFech = os.dataFechamento && !isNaN(new Date(os.dataFechamento).getTime())
+                    ? new Date(os.dataFechamento).toLocaleString('pt-BR')
+                    : (os.dataFechamento || 'Finalizada');
+
+                return `
+                    <div class="card card-custom mb-2 p-3 border-start border-4 border-success" onclick="abrirModalOS('${os.id}')" style="cursor:pointer;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div>
+                                <strong class="text-danger">${os.id}</strong>
+                                <span class="badge bg-dark ms-2">${os.veiculoPlaca || ''}</span>
+                                <span class="badge bg-success ms-1">MAT: ${mat}</span>
+                            </div>
+                            <small class="text-muted">${dataFech}</small>
+                        </div>
+                        <div class="fw-bold text-dark">${os.clienteNome} <small class="text-secondary">(${os.veiculoMarca} ${os.veiculoModelo})</small></div>
+                        <div class="small text-success mt-1"><i class="fa-solid fa-user-gear me-1"></i>Fechado por: <strong>${nomeMec}</strong> (Matrícula: <strong>${mat}</strong>)</div>
+                        ${os.servicoRealizado ? `<div class="small text-muted mt-1">${os.servicoRealizado}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function limparFiltroRelatorio() {
+            document.getElementById('relatorio-mes').value = new Date().toISOString().slice(0, 7);
+            document.getElementById('relatorio-matricula').value = '';
+            renderizarRelatorioMatriculas();
+        }
+
         function abrirModalOS(id) {
             osSelecionadaId = id;
             const os = bancoOS.find(item => item.id === id);
@@ -866,6 +1201,7 @@
 
             document.getElementById('modal-titulo').innerText = `${os.id} - ${os.clienteNome}`;
             const formatarData = (dt) => dt && dt !== 'A definir' && !isNaN(new Date(dt).getTime()) ? new Date(dt).toLocaleString('pt-BR') : dt;
+            const matFechamento = normalizarMatricula(os.mecanicoFechamentoMatricula);
 
             let htmlFotos = '';
             if (os.fotosEntrada && os.fotosEntrada.length > 0) {
@@ -915,8 +1251,13 @@
                         </tr>
                         <tr>
                             <td class="bg-light fw-bold">Mecânico Responsável:</td>
-                            <td>${os.mecanico}</td>
+                            <td>${os.mecanico} ${os.mecanicoMatricula ? `(Mat: ${normalizarMatricula(os.mecanicoMatricula)})` : ''}</td>
                         </tr>
+                        ${os.status === 'Finalizada' ? `
+                        <tr>
+                            <td class="bg-light fw-bold text-success">Fechamento / Matrícula:</td>
+                            <td class="text-success fw-bold">${os.mecanicoFechamentoNome || os.mecanico} — Matrícula: ${matFechamento || 'Não informada'} (${formatarData(os.dataFechamento)})</td>
+                        </tr>` : ''}
                         <tr>
                             <td class="bg-light fw-bold">Veículo:</td>
                             <td>${os.veiculoMarca} ${os.veiculoModelo}</td>
@@ -966,7 +1307,7 @@
                     <div class="row text-center">
                         <div class="col-6">
                             <div style="border-top: 1px solid #000; margin: 0 10px; padding-top: 5px;">
-                                <small class="fw-bold d-block text-dark">Mecânico: ${os.mecanico}</small>
+                                <small class="fw-bold d-block text-dark">Mecânico: ${os.mecanicoFechamentoNome || os.mecanico}</small>
                                 <small class="text-muted" style="font-size: 10px;">Assinatura do Responsável</small>
                             </div>
                         </div>
@@ -994,8 +1335,17 @@
         }
 
         function abrirModalBaixa() {
+            const os = bancoOS.find(item => item.id === osSelecionadaId);
             bootstrap.Modal.getInstance(document.getElementById('modalOS')).hide();
             document.getElementById('servico-realizado-texto').value = '';
+            document.getElementById('baixa-mecanico-matricula').value = os ? normalizarMatricula(os.mecanicoMatricula) : '';
+            document.getElementById('baixa-mecanico-nome').value = os ? (os.mecanico || '') : '';
+            document.getElementById('msg-baixa-mecanico').style.display = 'none';
+
+            if (os && os.mecanicoMatricula) {
+                preencherMecanicoPorMatricula('baixa-mecanico-matricula', 'baixa-mecanico-nome');
+            }
+
             const modalBaixa = new bootstrap.Modal(document.getElementById('modalBaixa'));
             modalBaixa.show();
         }
@@ -1004,15 +1354,43 @@
             if(!osSelecionadaId) return;
             const os = bancoOS.find(item => item.id === osSelecionadaId);
             const detalheServico = document.getElementById('servico-realizado-texto').value;
+            const matriculaFechamento = normalizarMatricula(document.getElementById('baixa-mecanico-matricula').value);
+            let nomeFechamento = document.getElementById('baixa-mecanico-nome').value.trim();
+
+            if (!matriculaFechamento) {
+                alert("Informe a matrícula do mecânico que está fechando a nota!");
+                document.getElementById('baixa-mecanico-matricula').focus();
+                return;
+            }
+
+            const cadastrado = bancoMecanicos.find(m => normalizarMatricula(m.matricula) === matriculaFechamento);
+            if (cadastrado) {
+                nomeFechamento = cadastrado.nome;
+            } else if (!nomeFechamento) {
+                alert("Informe o nome do mecânico para registrar a matrícula!");
+                document.getElementById('baixa-mecanico-nome').focus();
+                return;
+            }
 
             if(os) {
                 try {
+                    if (!cadastrado) {
+                        await db.collection("mecanicos").add({
+                            matricula: matriculaFechamento,
+                            nome: nomeFechamento,
+                            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+
                     await db.collection("ordens_servico").doc(os.docId).update({
                         status: 'Finalizada',
-                        servicoRealizado: detalheServico || 'Serviço concluído'
+                        servicoRealizado: detalheServico || 'Serviço concluído',
+                        mecanicoFechamentoMatricula: matriculaFechamento,
+                        mecanicoFechamentoNome: nomeFechamento,
+                        dataFechamento: new Date().toISOString()
                     });
 
-                    alert(`Baixa efetuada com sucesso para a ${os.id}! Status alterado para Finalizada.`);
+                    alert(`Baixa efetuada com sucesso para a ${os.id}! Fechada pela matrícula ${matriculaFechamento} (${nomeFechamento}).`);
                     bootstrap.Modal.getInstance(document.getElementById('modalBaixa')).hide();
                 } catch (error) {
                     console.error("Erro ao atualizar OS: ", error);
