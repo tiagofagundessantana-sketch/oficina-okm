@@ -337,7 +337,7 @@
             </div>
         </div>
 
-        <!-- TELA 2: NOVA OS (SEM SELEÇÃO DE MECÂNICO NA ABERTURA) -->
+        <!-- TELA 2: NOVA OS -->
         <div id="tela-nova-os" style="display: none;">
             <div class="card card-custom mb-4">
                 <div class="card-header card-header-okm">
@@ -370,8 +370,13 @@
                         <div class="row g-2 mb-3">
                             <div class="col-12">
                                 <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo (Digite para puxar dados)</label>
-                                <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="EX: ABC-1234 OU ABC1D23" oninput="buscarDadosPorPlaca(this.value)" onblur="consultarApiPlacaSeNecessario(this.value)" required>
-                                <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check me-1"></i>Dados do veículo/cliente carregados!</small>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" id="veiculo-placa" class="form-control fw-bold border-danger text-uppercase" maxlength="8" placeholder="EX: ABC1234 OU ABC1D23" oninput="aoDigitarPlaca(this.value)" required>
+                                    <button type="button" class="btn btn-vermelho" id="btn-consultar-placa" onclick="consultarApiPlaca(true)">
+                                        <i class="fa-solid fa-magnifying-glass me-1"></i> Consultar API
+                                    </button>
+                                </div>
+                                <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"></small>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user text-danger me-1"></i> Nome do Cliente</label>
@@ -394,13 +399,25 @@
                         <hr class="my-3">
 
                         <div class="row g-2 mb-3">
-                            <div class="col-6">
+                            <div class="col-6 col-md-4">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-industry text-danger me-1"></i> Marca do Veículo</label>
                                 <input type="text" id="veiculo-marca" class="form-control form-control-sm" placeholder="Ex: Honda, Yamaha" required>
                             </div>
-                            <div class="col-6">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-motorcycle text-danger me-1"></i> Modelo do Veículo</label>
-                                <input type="text" id="veiculo-modelo" class="form-control form-control-sm" placeholder="Ex: CG 160 Titan" required>
+                            <div class="col-6 col-md-5">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-motorcycle text-danger me-1"></i> Modelo / Ano</label>
+                                <input type="text" id="veiculo-modelo" class="form-control form-control-sm" placeholder="Ex: CG 160 Titan (2023)" required>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-palette text-danger me-1"></i> Cor</label>
+                                <input type="text" id="veiculo-cor" class="form-control form-control-sm text-uppercase" placeholder="Ex: VERMELHA">
+                            </div>
+                            <div class="col-6 col-md-6 mt-2">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-barcode text-danger me-1"></i> Chassi</label>
+                                <input type="text" id="veiculo-chassi" class="form-control form-control-sm text-uppercase" placeholder="Chassi do veículo">
+                            </div>
+                            <div class="col-12 col-md-6 mt-2">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-shield-halved text-danger me-1"></i> Situação do Veículo</label>
+                                <input type="text" id="veiculo-situacao" class="form-control form-control-sm" placeholder="Ex: Regular / Sem restrições">
                             </div>
                             <div class="col-6 mt-2">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-gauge-high text-danger me-1"></i> Quilometragem (KM)</label>
@@ -667,9 +684,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Opcional: configure se quiser chamar uma API de consulta de placa quando não achar no histórico
-        const API_PLACA_URL = ""; // ex.: "https://apiplacas.com.br/api/v1/consultar"
-        const API_PLACA_TOKEN = "";
+        // CONFIGURAÇÃO DA API PLACAS (wdapi2.com.br)
+        const API_PLACAS_BASE = "https://wdapi2.com.br/v3/completa";
+        const API_PLACAS_TOKEN = "placas_451e040ca1a64da18cf475b7e31bfbee";
 
         // Ativa o Cache Offline no navegador para carregamento instantâneo
         db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
@@ -727,7 +744,6 @@
             document.getElementById('login-senha').value = '';
         }
 
-        // Limita a busca às últimas 50 OSs mais recentes
         function iniciarEscutaFirestore() {
             db.collection("ordens_servico")
               .orderBy("criadoEm", "desc")
@@ -804,7 +820,7 @@
             }
         }
 
-        // ETAPA 2: INICIAR SERVIÇO MEDIANTE ABERTURA DA OS E MATRÍCULA DO MECÂNICO
+        // ETAPA 2: INICIAR SERVIÇO PELA MATRÍCULA DO MECÂNICO
         function abrirModalIniciarServico(id, event) {
             if (event) event.stopPropagation();
             const os = bancoOS.find(item => item.id === id);
@@ -1032,7 +1048,7 @@
             renderizarPreviewsFotos();
         }
 
-        function buscarDadosPorPlaca(placaDigitada) {
+        function aoDigitarPlaca(placaDigitada) {
             const placaFormatada = placaDigitada.toUpperCase().replace(/[^A-Z0-9]/g, '');
             const msgContainer = document.getElementById('msg-placa-encontrada');
 
@@ -1048,48 +1064,91 @@
                     document.getElementById('cliente-endereco').value = veiculoEncontrado.clienteEndereco || '';
                     document.getElementById('veiculo-marca').value = veiculoEncontrado.veiculoMarca || '';
                     document.getElementById('veiculo-modelo').value = veiculoEncontrado.veiculoModelo || '';
-                    msgContainer.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Dados do veículo/cliente carregados do histórico!';
+                    document.getElementById('veiculo-cor').value = veiculoEncontrado.veiculoCor || '';
+                    document.getElementById('veiculo-chassi').value = veiculoEncontrado.veiculoChassi || '';
+                    document.getElementById('veiculo-situacao').value = veiculoEncontrado.veiculoSituacao || '';
+                    msgContainer.className = 'text-success fw-bold d-block mt-1';
+                    msgContainer.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Dados do veículo/cliente carregados do histórico (sem gasto de saldo)!';
                     msgContainer.style.display = 'block';
                     return;
                 }
             }
-            msgContainer.style.display = 'none';
+
+            if (placaFormatada.length === 7 && placaFormatada !== ultimaPlacaConsultadaApi) {
+                consultarApiPlaca(false);
+            } else if (placaFormatada.length < 6) {
+                msgContainer.style.display = 'none';
+            }
         }
 
-        async function consultarApiPlacaSeNecessario(placaDigitada) {
-            const placaFormatada = placaDigitada.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (placaFormatada.length !== 7) return;
-            if (!API_PLACA_URL || placaFormatada === ultimaPlacaConsultadaApi) return;
+        async function consultarApiPlaca(forcarConsulta) {
+            const placaFormatada = document.getElementById('veiculo-placa').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            const msgContainer = document.getElementById('msg-placa-encontrada');
+            const btn = document.getElementById('btn-consultar-placa');
 
-            const jaTemMarca = document.getElementById('veiculo-marca').value.trim();
-            const jaTemModelo = document.getElementById('veiculo-modelo').value.trim();
-            if (jaTemMarca && jaTemModelo) return;
-
-            ultimaPlacaConsultadaApi = placaFormatada;
-            try {
-                const headers = { 'Content-Type': 'application/json' };
-                if (API_PLACA_TOKEN) {
-                    headers['Authorization'] = `Bearer ${API_PLACA_TOKEN}`;
+            if (placaFormatada.length !== 7) {
+                if (forcarConsulta) {
+                    alert("Digite a placa completa com 7 caracteres (ex: ABC1234 ou ABC1D23).");
                 }
-                const resp = await fetch(`${API_PLACA_URL}/${placaFormatada}`, { headers });
-                if (!resp.ok) return;
-                const data = await resp.json();
+                return;
+            }
 
-                const marca = data.marca || data.MARCA || '';
-                const modelo = data.modelo || data.MODELO || '';
-                const ano = data.ano || data.anoModelo || data.ano_modelo || '';
+            if (!forcarConsulta && placaFormatada === ultimaPlacaConsultadaApi) return;
+            ultimaPlacaConsultadaApi = placaFormatada;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Buscando...';
+            msgContainer.className = 'text-primary fw-bold d-block mt-1';
+            msgContainer.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Consultando dados da placa...';
+            msgContainer.style.display = 'block';
+
+            try {
+                const resp = await fetch(`${API_PLACAS_BASE}/${placaFormatada}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${API_PLACAS_TOKEN}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const json = await resp.json();
+
+                if (!resp.ok || json.error === true) {
+                    const erroMsg = json.message || `Erro HTTP ${resp.status} ao consultar placa.`;
+                    msgContainer.className = 'text-danger fw-bold d-block mt-1';
+                    msgContainer.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-1"></i>${erroMsg}`;
+                    return;
+                }
+
+                // Extrai os blocos retornados por /v3/completa/{placa}
+                const dadosBasico = (json.basico && json.basico.dados) ? json.basico.dados : (json.dados || json);
+                const dadosChassi = (json.chassi && json.chassi.dados) ? json.chassi.dados : (json.chassi || {});
+                const dadosMotor = (json.motor && json.motor.dados) ? json.motor.dados : (json.motor || {});
+
+                const marca = dadosBasico.marca || '';
+                const modeloBase = dadosBasico.modelo || dadosBasico.marcamodelo || '';
+                const ano = dadosBasico.anoModelo || dadosBasico.ano || '';
+                const cor = dadosBasico.cor || '';
+                const chassiCompleto = dadosChassi.chassi || dadosChassi.numero_chassi || dadosMotor.chassi || dadosBasico.chassi || (dadosBasico.final_chassi ? `Final ${dadosBasico.final_chassi}` : '');
+                const situacao = dadosBasico.situacao || dadosBasico.mensagemRetorno || 'Consulta realizada';
 
                 if (marca) document.getElementById('veiculo-marca').value = marca;
-                if (modelo) {
-                    document.getElementById('veiculo-modelo').value = ano ? `${modelo} (${ano})` : modelo;
+                if (modeloBase) {
+                    document.getElementById('veiculo-modelo').value = ano ? `${modeloBase} (${ano})` : modeloBase;
                 }
-                if (marca || modelo) {
-                    const msgContainer = document.getElementById('msg-placa-encontrada');
-                    msgContainer.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Dados do veículo carregados pela placa!';
-                    msgContainer.style.display = 'block';
-                }
+                if (cor) document.getElementById('veiculo-cor').value = cor;
+                if (chassiCompleto) document.getElementById('veiculo-chassi').value = chassiCompleto;
+                if (situacao) document.getElementById('veiculo-situacao').value = situacao;
+
+                msgContainer.className = 'text-success fw-bold d-block mt-1';
+                msgContainer.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Dados de Marca, Modelo, Cor, Chassi e Situação carregados!';
             } catch (err) {
-                console.warn("Consulta externa de placa não concluída:", err);
+                console.error("Erro ao consultar API Placas:", err);
+                msgContainer.className = 'text-warning fw-bold d-block mt-1';
+                msgContainer.innerHTML = '<i class="fa-solid fa-circle-info me-1"></i>Não foi possível conectar à API pelo navegador (verifique saldo/CORS) — preencha manualmente.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass me-1"></i> Consultar API';
             }
         }
 
@@ -1117,6 +1176,9 @@
                 clienteEndereco: document.getElementById('cliente-endereco').value.trim() || 'Não informado',
                 veiculoMarca: document.getElementById('veiculo-marca').value.trim(),
                 veiculoModelo: document.getElementById('veiculo-modelo').value.trim(),
+                veiculoCor: document.getElementById('veiculo-cor').value.trim().toUpperCase() || 'Não informada',
+                veiculoChassi: document.getElementById('veiculo-chassi').value.trim().toUpperCase() || 'Não informado',
+                veiculoSituacao: document.getElementById('veiculo-situacao').value.trim() || 'Não informada',
                 veiculoKm: document.getElementById('veiculo-km').value,
                 veiculoCombustivel: document.getElementById('veiculo-combustivel').value,
                 checklistObs: document.getElementById('checklist-obs').value.trim() || 'Nenhuma observação',
@@ -1265,7 +1327,7 @@
                     <div class="d-flex justify-content-between align-items-end gap-2 mt-1">
                         <div style="cursor:pointer;" onclick="abrirModalOS('${os.id}')" class="flex-fill">
                             <div class="fw-bold text-dark">${os.clienteNome} <small class="text-muted">(${os.clienteFone})</small></div>
-                            <div class="small text-secondary"><i class="fa-solid fa-motorcycle me-1"></i>${os.veiculoMarca} ${os.veiculoModelo} | KM: ${os.veiculoKm}</div>
+                            <div class="small text-secondary"><i class="fa-solid fa-motorcycle me-1"></i>${os.veiculoMarca} ${os.veiculoModelo} ${os.veiculoCor && os.veiculoCor !== 'Não informada' ? `| Cor: ${os.veiculoCor}` : ''} | KM: ${os.veiculoKm}</div>
                             <div class="small text-muted mt-1"><i class="fa-solid fa-user-pen me-1"></i>Atendente: ${os.atendente || 'Não informado'} | ${infoMecanicoHtml}</div>
                             ${os.servicoRealizado ? `<div class="small text-success mt-1 fw-semibold"><i class="fa-solid fa-check me-1"></i>Serviço: ${os.servicoRealizado}</div>` : ''}
                         </div>
@@ -1425,7 +1487,7 @@
                 <table class="table table-bordered table-sm small mb-3">
                     <tbody>
                         <tr>
-                            <td class="bg-light fw-bold" style="width: 25%;">Placa:</td>
+                            <td class="bg-light fw-bold" style="width: 28%;">Placa:</td>
                             <td><span class="badge bg-dark fs-6">${os.veiculoPlaca || 'Não informada'}</span></td>
                         </tr>
                         <tr>
@@ -1454,8 +1516,12 @@
                             <td class="text-success fw-bold">${os.mecanicoFechamentoNome || os.mecanico} — Matrícula: ${matFechamento || 'Não informada'} (${formatarData(os.dataFechamento)})</td>
                         </tr>` : ''}
                         <tr>
-                            <td class="bg-light fw-bold">Veículo:</td>
-                            <td>${os.veiculoMarca} ${os.veiculoModelo}</td>
+                            <td class="bg-light fw-bold">Veículo / Cor:</td>
+                            <td>${os.veiculoMarca} ${os.veiculoModelo} — Cor: <strong>${os.veiculoCor || 'Não informada'}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="bg-light fw-bold">Chassi / Situação:</td>
+                            <td>Chassi: <strong>${os.veiculoChassi || 'Não informado'}</strong> | Situação: <strong>${os.veiculoSituacao || 'Não informada'}</strong></td>
                         </tr>
                         <tr>
                             <td class="bg-light fw-bold">KM / Combustível:</td>
