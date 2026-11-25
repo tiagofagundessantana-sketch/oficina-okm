@@ -684,9 +684,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // CONFIGURAÇÃO DA API PLACAS (wdapi2.com.br)
-        const API_PLACAS_BASE = "https://wdapi2.com.br/v3/completa";
-        const API_PLACAS_TOKEN = "placas_451e040ca1a64da18cf475b7e31bfbee";
+        // CONFIGURAÇÃO DO PROXY CLOUDFLARE WORKER (API PLACAS)
+        const PROXY_PLACAS_URL = "https://winter-sun-72ffokm-api-placas.tiagofagundessantana.workers.dev";
 
         // Ativa o Cache Offline no navegador para carregamento instantâneo
         db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
@@ -1088,7 +1087,7 @@
 
             if (placaFormatada.length !== 7) {
                 if (forcarConsulta) {
-                    alert("Digite a placa completa com 7 caracteres (ex: ABC1234 ou ABC1D23).");
+                    alert("Introduza a placa completa com 7 caracteres (ex: ABC1234 ou ABC1D23).");
                 }
                 return;
             }
@@ -1097,16 +1096,15 @@
             ultimaPlacaConsultadaApi = placaFormatada;
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Buscando...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> A buscar...';
             msgContainer.className = 'text-primary fw-bold d-block mt-1';
-            msgContainer.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Consultando dados da placa...';
+            msgContainer.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>A consultar dados da placa...';
             msgContainer.style.display = 'block';
 
             try {
-                const resp = await fetch(`${API_PLACAS_BASE}/${placaFormatada}`, {
+                const resp = await fetch(`${PROXY_PLACAS_URL}?placa=${encodeURIComponent(placaFormatada)}`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${API_PLACAS_TOKEN}`,
                         'Accept': 'application/json'
                     }
                 });
@@ -1114,13 +1112,12 @@
                 const json = await resp.json();
 
                 if (!resp.ok || json.error === true) {
-                    const erroMsg = json.message || `Erro HTTP ${resp.status} ao consultar placa.`;
+                    const erroMsg = json.message || `Erro HTTP ${resp.status} ao consultar a placa.`;
                     msgContainer.className = 'text-danger fw-bold d-block mt-1';
                     msgContainer.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-1"></i>${erroMsg}`;
                     return;
                 }
 
-                // Extrai os blocos retornados por /v3/completa/{placa}
                 const dadosBasico = (json.basico && json.basico.dados) ? json.basico.dados : (json.dados || json);
                 const dadosChassi = (json.chassi && json.chassi.dados) ? json.chassi.dados : (json.chassi || {});
                 const dadosMotor = (json.motor && json.motor.dados) ? json.motor.dados : (json.motor || {});
@@ -1143,9 +1140,9 @@
                 msgContainer.className = 'text-success fw-bold d-block mt-1';
                 msgContainer.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Dados de Marca, Modelo, Cor, Chassi e Situação carregados!';
             } catch (err) {
-                console.error("Erro ao consultar API Placas:", err);
+                console.error("Erro ao consultar proxy da API Placas:", err);
                 msgContainer.className = 'text-warning fw-bold d-block mt-1';
-                msgContainer.innerHTML = '<i class="fa-solid fa-circle-info me-1"></i>Não foi possível conectar à API pelo navegador (verifique saldo/CORS) — preencha manualmente.';
+                msgContainer.innerHTML = '<i class="fa-solid fa-circle-info me-1"></i>Não foi possível ligar ao proxy — preencha manualmente.';
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-magnifying-glass me-1"></i> Consultar API';
