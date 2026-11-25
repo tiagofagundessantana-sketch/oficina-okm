@@ -268,19 +268,25 @@
 
             <!-- Resumo das OS -->
             <div class="row g-2 mb-3">
-                <div class="col-4">
-                    <div class="card card-custom p-2 text-center border-bottom border-danger border-3">
-                        <small class="text-muted d-block">Em Serviço</small>
-                        <span class="fs-4 fw-bold" id="total-servico">0</span>
+                <div class="col-3">
+                    <div class="card card-custom p-2 text-center border-bottom border-secondary border-3">
+                        <small class="text-muted d-block">Abertas</small>
+                        <span class="fs-4 fw-bold text-secondary" id="total-abertas">0</span>
                     </div>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
+                    <div class="card card-custom p-2 text-center border-bottom border-danger border-3">
+                        <small class="text-muted d-block">Em Serviço</small>
+                        <span class="fs-4 fw-bold text-danger" id="total-servico">0</span>
+                    </div>
+                </div>
+                <div class="col-3">
                     <div class="card card-custom p-2 text-center border-bottom border-warning border-3">
                         <small class="text-muted d-block">Aguardando</small>
                         <span class="fs-4 fw-bold text-warning" id="total-aguardando">0</span>
                     </div>
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     <div class="card card-custom p-2 text-center border-bottom border-success border-3">
                         <small class="text-muted d-block">Concluídas</small>
                         <span class="fs-4 fw-bold text-success" id="total-prontas">0</span>
@@ -300,7 +306,8 @@
                         <label class="form-label small fw-bold mb-1">Status</label>
                         <select id="filtro-status" class="form-select form-select-sm">
                             <option value="todos">Todos os Status</option>
-                            <option value="Em Serviço">Em Serviço (Abertas)</option>
+                            <option value="Aberta">Aberta (Aguardando Mecânico)</option>
+                            <option value="Em Serviço">Em Serviço (Iniciadas)</option>
                             <option value="Aguardando">Aguardando Peça/Cliente</option>
                             <option value="Finalizada">Finalizadas (Baixadas)</option>
                         </select>
@@ -330,7 +337,7 @@
             </div>
         </div>
 
-        <!-- TELA 2: NOVA OS -->
+        <!-- TELA 2: NOVA OS (SEM SELEÇÃO DE MECÂNICO NA ABERTURA) -->
         <div id="tela-nova-os" style="display: none;">
             <div class="card card-custom mb-4">
                 <div class="card-header card-header-okm">
@@ -343,22 +350,19 @@
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user-pen text-danger me-1"></i> Responsável pela Abertura</label>
                                 <input type="text" id="atendente" class="form-control form-control-sm" placeholder="Nome do atendente / recepcionista" required>
                             </div>
-                            <div class="col-4 col-md-3">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-id-badge text-danger me-1"></i> Matrícula Mec.</label>
-                                <input type="text" id="mecanico-matricula" class="form-control form-control-sm text-uppercase" placeholder="Ex: 01" oninput="preencherMecanicoPorMatricula('mecanico-matricula', 'mecanico')">
-                            </div>
-                            <div class="col-8 col-md-5">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-user-gear text-danger me-1"></i> Mecânico Responsável</label>
-                                <input type="text" id="mecanico" class="form-control form-control-sm" placeholder="Nome do mecânico" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label fw-bold small"><i class="fa-solid fa-calendar-plus text-danger me-1"></i> Início do Serviço</label>
+                            <div class="col-6 col-md-4">
+                                <label class="form-label fw-bold small"><i class="fa-solid fa-calendar-plus text-danger me-1"></i> Data / Hora de Abertura</label>
                                 <input type="datetime-local" id="data-inicio" class="form-control form-control-sm" required>
                             </div>
-                            <div class="col-6">
+                            <div class="col-6 col-md-4">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-calendar-check text-danger me-1"></i> Previsão Término</label>
                                 <input type="datetime-local" id="data-termino" class="form-control form-control-sm">
                             </div>
+                        </div>
+
+                        <div class="alert alert-light border border-secondary-subtle py-2 px-3 small mb-3">
+                            <i class="fa-solid fa-circle-info text-danger me-1"></i>
+                            O mecânico não é definido na abertura: a OS entra como <strong>Aberta</strong> e o mecânico iniciará o serviço informando a <strong>matrícula</strong> dele.
                         </div>
 
                         <hr class="my-3">
@@ -366,8 +370,8 @@
                         <div class="row g-2 mb-3">
                             <div class="col-12">
                                 <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-card me-1"></i> Placa do Veículo (Digite para puxar dados)</label>
-                                <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="EX: ABC-1234 OU ABC1D23" oninput="buscarDadosPorPlaca(this.value)" required>
-                                <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check me-1"></i>Dados do veículo/cliente carregados do histórico!</small>
+                                <input type="text" id="veiculo-placa" class="form-control form-control-sm fw-bold border-danger text-uppercase" placeholder="EX: ABC-1234 OU ABC1D23" oninput="buscarDadosPorPlaca(this.value)" onblur="consultarApiPlacaSeNecessario(this.value)" required>
+                                <small class="text-success fw-bold d-block mt-1" id="msg-placa-encontrada" style="display:none;"><i class="fa-solid fa-circle-check me-1"></i>Dados do veículo/cliente carregados!</small>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-bold small"><i class="fa-solid fa-user text-danger me-1"></i> Nome do Cliente</label>
@@ -521,6 +525,30 @@
             </div>
         </div>
 
+        <!-- MODAL DE INÍCIO DE SERVIÇO POR MATRÍCULA -->
+        <div class="modal fade" id="modalIniciarServico" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title fs-6 fw-bold"><i class="fa-solid fa-play text-danger me-1"></i> Iniciar Serviço na OS</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-3">
+                        <div class="mb-2 small text-muted" id="info-os-inicio"></div>
+                        <label class="form-label fw-bold small text-danger"><i class="fa-solid fa-id-badge me-1"></i> Digite sua Matrícula Cadastrada *</label>
+                        <input type="text" id="inicio-mecanico-matricula" class="form-control form-control-sm fw-bold text-uppercase border-danger mb-2" placeholder="Ex: 01" oninput="validarMatriculaInicio()">
+                        <div id="preview-mecanico-inicio" class="small fw-semibold text-secondary mb-2">Digite a matrícula para identificar o mecânico.</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-sm btn-vermelho fw-bold" id="btn-confirmar-inicio" onclick="confirmarInicioServico()">
+                            <i class="fa-solid fa-play me-1"></i> Confirmar Início
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- MODAL DE DETALHES -->
         <div class="modal fade" id="modalOS" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -537,6 +565,9 @@
                         <div>
                             <button type="button" class="btn btn-sm btn-outline-dark me-1" onclick="imprimirOS()">
                                 <i class="fa-solid fa-print me-1"></i> Imprimir
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger me-1" id="btn-iniciar-no-modal" onclick="abrirModalIniciarPorId(osSelecionadaId)" style="display: none;">
+                                <i class="fa-solid fa-play me-1"></i> Iniciar Serviço
                             </button>
                             <button type="button" class="btn btn-sm btn-success" id="btn-dar-baixa" onclick="abrirModalBaixa()">
                                 <i class="fa-solid fa-check me-1"></i> Baixa de Nota
@@ -636,7 +667,11 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // OTIMIZAÇÃO 1: Ativa o Cache Offline no navegador para carregamento instantâneo
+        // Opcional: configure se quiser chamar uma API de consulta de placa quando não achar no histórico
+        const API_PLACA_URL = ""; // ex.: "https://apiplacas.com.br/api/v1/consultar"
+        const API_PLACA_TOKEN = "";
+
+        // Ativa o Cache Offline no navegador para carregamento instantâneo
         db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
             console.warn("Aviso na persistência offline:", err.code);
         });
@@ -649,7 +684,9 @@
         let bancoOS = [];
         let bancoMecanicos = [];
         let osSelecionadaId = null;
+        let osParaIniciarId = null;
         let fotosEntradaTemp = [];
+        let ultimaPlacaConsultadaApi = "";
 
         document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
         document.getElementById('relatorio-mes').value = new Date().toISOString().slice(0, 7);
@@ -690,7 +727,7 @@
             document.getElementById('login-senha').value = '';
         }
 
-        // OTIMIZAÇÃO 2: Limita a busca apenas às últimas 50 OSs mais recentes
+        // Limita a busca às últimas 50 OSs mais recentes
         function iniciarEscutaFirestore() {
             db.collection("ordens_servico")
               .orderBy("criadoEm", "desc")
@@ -764,6 +801,97 @@
                 msgBaixa.style.display = 'block';
                 msgBaixa.className = 'text-warning fw-bold d-block mb-2';
                 msgBaixa.innerHTML = `<i class="fa-solid fa-circle-info me-1"></i>Matrícula nova: será registrada ao confirmar a baixa.`;
+            }
+        }
+
+        // ETAPA 2: INICIAR SERVIÇO MEDIANTE ABERTURA DA OS E MATRÍCULA DO MECÂNICO
+        function abrirModalIniciarServico(id, event) {
+            if (event) event.stopPropagation();
+            const os = bancoOS.find(item => item.id === id);
+            if (!os) return;
+
+            if (os.status !== 'Aberta') {
+                alert(`Esta OS já está com status "${os.status}".`);
+                return;
+            }
+
+            osParaIniciarId = id;
+            document.getElementById('inicio-mecanico-matricula').value = '';
+            document.getElementById('info-os-inicio').innerHTML = `
+                <strong>${os.id}</strong> — Placa: <span class="badge bg-dark">${os.veiculoPlaca || '-'}</span> | ${os.veiculoMarca} ${os.veiculoModelo} (${os.clienteNome})
+            `;
+            document.getElementById('preview-mecanico-inicio').className = 'small fw-semibold text-secondary mb-2';
+            document.getElementById('preview-mecanico-inicio').innerText = 'Digite a matrícula para identificar o mecânico.';
+
+            const modalEl = document.getElementById('modalIniciarServico');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+
+            setTimeout(() => {
+                document.getElementById('inicio-mecanico-matricula').focus();
+            }, 200);
+        }
+
+        function abrirModalIniciarPorId(id) {
+            const modalDetalhe = bootstrap.Modal.getInstance(document.getElementById('modalOS'));
+            if (modalDetalhe) modalDetalhe.hide();
+            abrirModalIniciarServico(id);
+        }
+
+        function validarMatriculaInicio() {
+            const mat = normalizarMatricula(document.getElementById('inicio-mecanico-matricula').value);
+            const preview = document.getElementById('preview-mecanico-inicio');
+
+            if (!mat) {
+                preview.className = 'small fw-semibold text-secondary mb-2';
+                preview.innerText = 'Digite a matrícula para identificar o mecânico.';
+                return null;
+            }
+
+            const encontrado = bancoMecanicos.find(m => normalizarMatricula(m.matricula) === mat);
+            if (encontrado) {
+                preview.className = 'small fw-bold text-success mb-2';
+                preview.innerHTML = `<i class="fa-solid fa-circle-check me-1"></i>Mecânico identificado: ${encontrado.nome} (Matrícula: ${normalizarMatricula(encontrado.matricula)})`;
+                return encontrado;
+            } else {
+                preview.className = 'small fw-bold text-danger mb-2';
+                preview.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-1"></i>Matrícula "${mat}" não encontrada. Cadastre na aba Mecânicos.`;
+                return null;
+            }
+        }
+
+        async function confirmarInicioServico() {
+            if (!osParaIniciarId) return;
+            const os = bancoOS.find(item => item.id === osParaIniciarId);
+            if (!os) return;
+
+            const matDigitada = normalizarMatricula(document.getElementById('inicio-mecanico-matricula').value);
+            const mecanico = bancoMecanicos.find(m => normalizarMatricula(m.matricula) === matDigitada);
+
+            if (!mecanico) {
+                alert("Matrícula inválida ou não cadastrada! Cadastre o mecânico na aba 'Mecânicos' antes de iniciar o serviço.");
+                document.getElementById('inicio-mecanico-matricula').focus();
+                return;
+            }
+
+            const btn = document.getElementById('btn-confirmar-inicio');
+            btn.disabled = true;
+
+            try {
+                await db.collection("ordens_servico").doc(os.docId).update({
+                    status: 'Em Serviço',
+                    mecanicoMatricula: normalizarMatricula(mecanico.matricula),
+                    mecanico: mecanico.nome,
+                    dataInicioServico: new Date().toISOString()
+                });
+
+                bootstrap.Modal.getInstance(document.getElementById('modalIniciarServico')).hide();
+                alert(`Serviço da ${os.id} iniciado por ${mecanico.nome} (Matrícula: ${normalizarMatricula(mecanico.matricula)})!`);
+            } catch (error) {
+                console.error("Erro ao iniciar serviço:", error);
+                alert("Erro ao iniciar o serviço na OS.");
+            } finally {
+                btn.disabled = false;
             }
         }
 
@@ -850,7 +978,6 @@
             input.value = '';
         }
 
-        // OTIMIZAÇÃO 3: Compressão mais leve das fotos (máx 600px de largura e qualidade 0.45)
         function comprimirImagem(file) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -921,11 +1048,49 @@
                     document.getElementById('cliente-endereco').value = veiculoEncontrado.clienteEndereco || '';
                     document.getElementById('veiculo-marca').value = veiculoEncontrado.veiculoMarca || '';
                     document.getElementById('veiculo-modelo').value = veiculoEncontrado.veiculoModelo || '';
+                    msgContainer.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Dados do veículo/cliente carregados do histórico!';
                     msgContainer.style.display = 'block';
                     return;
                 }
             }
             msgContainer.style.display = 'none';
+        }
+
+        async function consultarApiPlacaSeNecessario(placaDigitada) {
+            const placaFormatada = placaDigitada.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (placaFormatada.length !== 7) return;
+            if (!API_PLACA_URL || placaFormatada === ultimaPlacaConsultadaApi) return;
+
+            const jaTemMarca = document.getElementById('veiculo-marca').value.trim();
+            const jaTemModelo = document.getElementById('veiculo-modelo').value.trim();
+            if (jaTemMarca && jaTemModelo) return;
+
+            ultimaPlacaConsultadaApi = placaFormatada;
+            try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (API_PLACA_TOKEN) {
+                    headers['Authorization'] = `Bearer ${API_PLACA_TOKEN}`;
+                }
+                const resp = await fetch(`${API_PLACA_URL}/${placaFormatada}`, { headers });
+                if (!resp.ok) return;
+                const data = await resp.json();
+
+                const marca = data.marca || data.MARCA || '';
+                const modelo = data.modelo || data.MODELO || '';
+                const ano = data.ano || data.anoModelo || data.ano_modelo || '';
+
+                if (marca) document.getElementById('veiculo-marca').value = marca;
+                if (modelo) {
+                    document.getElementById('veiculo-modelo').value = ano ? `${modelo} (${ano})` : modelo;
+                }
+                if (marca || modelo) {
+                    const msgContainer = document.getElementById('msg-placa-encontrada');
+                    msgContainer.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Dados do veículo carregados pela placa!';
+                    msgContainer.style.display = 'block';
+                }
+            } catch (err) {
+                console.warn("Consulta externa de placa não concluída:", err);
+            }
         }
 
         async function salvarOS(e) {
@@ -936,32 +1101,31 @@
             btnSalvar.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Salvando...';
 
             const dataTerminoVal = document.getElementById('data-termino').value;
-            const matAbertura = normalizarMatricula(document.getElementById('mecanico-matricula').value);
-            const nomeMecanico = document.getElementById('mecanico').value.trim();
 
             const novaOS = {
                 id: 'OS-' + Math.floor(1000 + Math.random() * 9000),
-                atendente: document.getElementById('atendente').value,
-                mecanicoMatricula: matAbertura,
-                mecanico: nomeMecanico,
+                atendente: document.getElementById('atendente').value.trim(),
+                mecanicoMatricula: '',
+                mecanico: 'Aguardando mecânico',
                 dataInicio: document.getElementById('data-inicio').value,
+                dataInicioServico: '',
                 dataTermino: dataTerminoVal ? dataTerminoVal : 'A definir',
-                veiculoPlaca: document.getElementById('veiculo-placa').value.toUpperCase(),
-                clienteNome: document.getElementById('cliente-nome').value,
-                clienteCpf: document.getElementById('cliente-cpf').value || 'Não informado',
-                clienteFone: document.getElementById('cliente-fone').value,
-                clienteEndereco: document.getElementById('cliente-endereco').value || 'Não informado',
-                veiculoMarca: document.getElementById('veiculo-marca').value,
-                veiculoModelo: document.getElementById('veiculo-modelo').value,
+                veiculoPlaca: document.getElementById('veiculo-placa').value.toUpperCase().trim(),
+                clienteNome: document.getElementById('cliente-nome').value.trim(),
+                clienteCpf: document.getElementById('cliente-cpf').value.trim() || 'Não informado',
+                clienteFone: document.getElementById('cliente-fone').value.trim(),
+                clienteEndereco: document.getElementById('cliente-endereco').value.trim() || 'Não informado',
+                veiculoMarca: document.getElementById('veiculo-marca').value.trim(),
+                veiculoModelo: document.getElementById('veiculo-modelo').value.trim(),
                 veiculoKm: document.getElementById('veiculo-km').value,
                 veiculoCombustivel: document.getElementById('veiculo-combustivel').value,
-                checklistObs: document.getElementById('checklist-obs').value || 'Nenhuma observação',
+                checklistObs: document.getElementById('checklist-obs').value.trim() || 'Nenhuma observação',
                 fotosEntrada: [...fotosEntradaTemp],
                 servicoRealizado: '',
                 mecanicoFechamentoMatricula: '',
                 mecanicoFechamentoNome: '',
                 dataFechamento: '',
-                status: 'Em Serviço',
+                status: 'Aberta',
                 criadoEm: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -972,9 +1136,10 @@
                 document.getElementById('data-inicio').value = new Date().toISOString().slice(0, 16);
                 document.getElementById('msg-placa-encontrada').style.display = 'none';
                 fotosEntradaTemp = [];
+                ultimaPlacaConsultadaApi = "";
                 renderizarPreviewsFotos();
                 
-                alert('Ordem de Serviço criada com sucesso!');
+                alert('Ordem de Serviço aberta! Agora o mecânico pode iniciar o serviço pela matrícula.');
                 trocarTela('tela-painel');
             } catch (error) {
                 console.error("Erro ao salvar OS: ", error);
@@ -983,6 +1148,20 @@
                 btnSalvar.disabled = false;
                 btnSalvar.innerHTML = '<i class="fa-solid fa-save me-1"></i> Gerar Ordem de Serviço';
             }
+        }
+
+        function obterCorBadgeStatus(status) {
+            if (status === 'Finalizada') return 'bg-success';
+            if (status === 'Em Serviço') return 'bg-danger';
+            if (status === 'Aguardando') return 'bg-warning text-dark';
+            return 'bg-secondary';
+        }
+
+        function obterCorBordaStatus(status) {
+            if (status === 'Finalizada') return 'border-success';
+            if (status === 'Em Serviço') return 'border-danger';
+            if (status === 'Aguardando') return 'border-warning';
+            return 'border-secondary';
         }
 
         function renderizarPainel() {
@@ -994,14 +1173,16 @@
             const valDataInicio = document.getElementById('filtro-data-inicio').value;
             const valDataFim = document.getElementById('filtro-data-fim').value;
 
-            let emServico = 0, aguardando = 0, prontas = 0;
+            let abertas = 0, emServico = 0, aguardando = 0, prontas = 0;
 
             bancoOS.forEach(os => {
-                if(os.status === 'Em Serviço') emServico++;
-                if(os.status === 'Aguardando') aguardando++;
-                if(os.status === 'Finalizada') prontas++;
+                if (os.status === 'Aberta') abertas++;
+                if (os.status === 'Em Serviço') emServico++;
+                if (os.status === 'Aguardando') aguardando++;
+                if (os.status === 'Finalizada') prontas++;
             });
 
+            document.getElementById('total-abertas').innerText = abertas;
             document.getElementById('total-servico').innerText = emServico;
             document.getElementById('total-aguardando').innerText = aguardando;
             document.getElementById('total-prontas').innerText = prontas;
@@ -1044,24 +1225,33 @@
             }
 
             ordensFiltradas.forEach(os => {
-                const badgeColor = os.status === 'Finalizada' ? 'bg-success' : 'bg-danger';
+                const badgeColor = obterCorBadgeStatus(os.status);
+                const borderColor = obterCorBordaStatus(os.status);
                 const qtdFotos = os.fotosEntrada ? os.fotosEntrada.length : 0;
-                const matFechamento = normalizarMatricula(os.mecanicoFechamentoMatricula);
+                const matResponsavel = normalizarMatricula(os.mecanicoFechamentoMatricula || os.mecanicoMatricula);
                 
                 let dataFormatada = os.dataInicio;
                 if (os.dataInicio && !isNaN(new Date(os.dataInicio).getTime())) {
                     dataFormatada = new Date(os.dataInicio).toLocaleDateString('pt-BR');
                 }
 
+                const botaoIniciarHtml = os.status === 'Aberta'
+                    ? `<button class="btn btn-sm btn-vermelho" onclick="abrirModalIniciarServico('${os.id}', event)"><i class="fa-solid fa-play me-1"></i>Iniciar Serviço</button>`
+                    : '';
+
+                const infoMecanicoHtml = os.status === 'Aberta'
+                    ? `<span class="text-secondary fw-semibold"><i class="fa-solid fa-clock me-1"></i>Aguardando início do mecânico</span>`
+                    : `<i class="fa-solid fa-user-gear me-1"></i>Mecânico: <strong>${os.mecanico}</strong>${os.mecanicoMatricula ? ` (MAT: ${normalizarMatricula(os.mecanicoMatricula)})` : ''}`;
+
                 const item = document.createElement('div');
-                item.className = 'card card-custom mb-2 p-3 border-start border-4 ' + (os.status === 'Finalizada' ? 'border-success' : 'border-danger');
+                item.className = `card card-custom mb-2 p-3 border-start border-4 ${borderColor}`;
 
                 item.innerHTML = `
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <div>
                             <strong class="text-danger" onclick="abrirModalOS('${os.id}')" style="cursor:pointer;">${os.id}</strong>
                             ${os.veiculoPlaca ? `<span class="badge bg-dark ms-2">${os.veiculoPlaca}</span>` : ''}
-                            ${matFechamento ? `<span class="badge bg-success ms-1" title="Fechada pela matrícula"><i class="fa-solid fa-id-badge me-1"></i>MAT ${matFechamento}</span>` : ''}
+                            ${matResponsavel ? `<span class="badge ${os.status === 'Finalizada' ? 'bg-success' : 'bg-primary'} ms-1" title="Matrícula do mecânico"><i class="fa-solid fa-id-badge me-1"></i>MAT ${matResponsavel}</span>` : ''}
                             ${qtdFotos > 0 ? `<span class="badge bg-secondary ms-1" title="${qtdFotos} fotos registradas"><i class="fa-solid fa-camera"></i> ${qtdFotos}</span>` : ''}
                         </div>
                         <div>
@@ -1072,11 +1262,16 @@
                             </button>
                         </div>
                     </div>
-                    <div style="cursor:pointer;" onclick="abrirModalOS('${os.id}')">
-                        <div class="fw-bold text-dark">${os.clienteNome} <small class="text-muted">(${os.clienteFone})</small></div>
-                        <div class="small text-secondary"><i class="fa-solid fa-motorcycle me-1"></i>${os.veiculoMarca} ${os.veiculoModelo} | KM: ${os.veiculoKm}</div>
-                        <div class="small text-muted mt-1"><i class="fa-solid fa-user-pen me-1"></i>Atendente: ${os.atendente || 'Não informado'} | <i class="fa-solid fa-user-gear me-1"></i>Mecânico: ${os.mecanico}</div>
-                        ${os.servicoRealizado ? `<div class="small text-success mt-1 fw-semibold"><i class="fa-solid fa-check me-1"></i>Serviço: ${os.servicoRealizado}</div>` : ''}
+                    <div class="d-flex justify-content-between align-items-end gap-2 mt-1">
+                        <div style="cursor:pointer;" onclick="abrirModalOS('${os.id}')" class="flex-fill">
+                            <div class="fw-bold text-dark">${os.clienteNome} <small class="text-muted">(${os.clienteFone})</small></div>
+                            <div class="small text-secondary"><i class="fa-solid fa-motorcycle me-1"></i>${os.veiculoMarca} ${os.veiculoModelo} | KM: ${os.veiculoKm}</div>
+                            <div class="small text-muted mt-1"><i class="fa-solid fa-user-pen me-1"></i>Atendente: ${os.atendente || 'Não informado'} | ${infoMecanicoHtml}</div>
+                            ${os.servicoRealizado ? `<div class="small text-success mt-1 fw-semibold"><i class="fa-solid fa-check me-1"></i>Serviço: ${os.servicoRealizado}</div>` : ''}
+                        </div>
+                        <div class="no-print">
+                            ${botaoIniciarHtml}
+                        </div>
                     </div>
                 `;
                 container.appendChild(item);
@@ -1250,8 +1445,8 @@
                             <td>${os.atendente || 'Não informado'}</td>
                         </tr>
                         <tr>
-                            <td class="bg-light fw-bold">Mecânico Responsável:</td>
-                            <td>${os.mecanico} ${os.mecanicoMatricula ? `(Mat: ${normalizarMatricula(os.mecanicoMatricula)})` : ''}</td>
+                            <td class="bg-light fw-bold">Mecânico / Início:</td>
+                            <td>${os.mecanico || 'Aguardando mecânico'} ${os.mecanicoMatricula ? `(MAT: ${normalizarMatricula(os.mecanicoMatricula)})` : ''} ${os.dataInicioServico ? `— Início: ${formatarData(os.dataInicioServico)}` : ''}</td>
                         </tr>
                         ${os.status === 'Finalizada' ? `
                         <tr>
@@ -1267,7 +1462,7 @@
                             <td>${os.veiculoKm} km | ${os.veiculoCombustivel}</td>
                         </tr>
                         <tr>
-                            <td class="bg-light fw-bold">Data Início:</td>
+                            <td class="bg-light fw-bold">Data Abertura:</td>
                             <td>${formatarData(os.dataInicio)}</td>
                         </tr>
                         <tr>
@@ -1276,7 +1471,7 @@
                         </tr>
                         <tr>
                             <td class="bg-light fw-bold">Status:</td>
-                            <td><span class="badge ${os.status === 'Finalizada' ? 'bg-success' : 'bg-danger'}">${os.status}</span></td>
+                            <td><span class="badge ${obterCorBadgeStatus(os.status)}">${os.status}</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1307,7 +1502,7 @@
                     <div class="row text-center">
                         <div class="col-6">
                             <div style="border-top: 1px solid #000; margin: 0 10px; padding-top: 5px;">
-                                <small class="fw-bold d-block text-dark">Mecânico: ${os.mecanicoFechamentoNome || os.mecanico}</small>
+                                <small class="fw-bold d-block text-dark">Mecânico: ${os.mecanicoFechamentoNome || os.mecanico || '________________'}</small>
                                 <small class="text-muted" style="font-size: 10px;">Assinatura do Responsável</small>
                             </div>
                         </div>
@@ -1320,6 +1515,9 @@
                     </div>
                 </div>
             `;
+
+            const btnIniciarModal = document.getElementById('btn-iniciar-no-modal');
+            btnIniciarModal.style.display = os.status === 'Aberta' ? 'inline-block' : 'none';
 
             const btnBaixa = document.getElementById('btn-dar-baixa');
             btnBaixa.style.display = os.status === 'Finalizada' ? 'none' : 'inline-block';
@@ -1336,13 +1534,23 @@
 
         function abrirModalBaixa() {
             const os = bancoOS.find(item => item.id === osSelecionadaId);
+            if (!os) return;
+
+            if (os.status === 'Aberta') {
+                const desejaIniciar = confirm("Esta OS ainda não foi iniciada por nenhum mecânico. Deseja iniciar o serviço pela matrícula agora?");
+                if (desejaIniciar) {
+                    abrirModalIniciarPorId(os.id);
+                    return;
+                }
+            }
+
             bootstrap.Modal.getInstance(document.getElementById('modalOS')).hide();
             document.getElementById('servico-realizado-texto').value = '';
-            document.getElementById('baixa-mecanico-matricula').value = os ? normalizarMatricula(os.mecanicoMatricula) : '';
-            document.getElementById('baixa-mecanico-nome').value = os ? (os.mecanico || '') : '';
+            document.getElementById('baixa-mecanico-matricula').value = normalizarMatricula(os.mecanicoMatricula);
+            document.getElementById('baixa-mecanico-nome').value = os.mecanico && os.mecanico !== 'Aguardando mecânico' ? os.mecanico : '';
             document.getElementById('msg-baixa-mecanico').style.display = 'none';
 
-            if (os && os.mecanicoMatricula) {
+            if (os.mecanicoMatricula) {
                 preencherMecanicoPorMatricula('baixa-mecanico-matricula', 'baixa-mecanico-nome');
             }
 
@@ -1385,6 +1593,8 @@
                     await db.collection("ordens_servico").doc(os.docId).update({
                         status: 'Finalizada',
                         servicoRealizado: detalheServico || 'Serviço concluído',
+                        mecanicoMatricula: os.mecanicoMatricula || matriculaFechamento,
+                        mecanico: os.mecanico && os.mecanico !== 'Aguardando mecânico' ? os.mecanico : nomeFechamento,
                         mecanicoFechamentoMatricula: matriculaFechamento,
                         mecanicoFechamentoNome: nomeFechamento,
                         dataFechamento: new Date().toISOString()
